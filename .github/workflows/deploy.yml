@@ -1,0 +1,38 @@
+name: Deploy to WordPress.org
+on:
+  push:
+    branches:
+      - "*"
+    tags:
+      - "*"
+jobs:
+  deploy:
+    name: Deploy to WordPress.org
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: WordPress Plugin Deploy
+        id: deploy
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        with:
+          generate-zip: true
+          svn-username: ${{ secrets.SVN_USERNAME }}
+          svn-password: ${{ secrets.SVN_PASSWORD }}
+          asset-dir: .wordpress-org
+
+      - name: Rename Zip to Repository Name
+        run: |
+          mv ${{ steps.deploy.outputs.zip-path }} ${{ github.event.repository.name }}.zip
+          echo "ZIP_PATH=${{ github.event.repository.name }}.zip" >> $GITHUB_ENV
+
+      - name: Upload Zip as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}
+          path: ${{ env.ZIP_PATH }}
+
+      - name: Upload to Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ env.ZIP_PATH }}

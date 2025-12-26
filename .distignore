@@ -1,0 +1,9 @@
+.git
+.github
+.gitignore
+.distignore
+node_modules
+README.md
+tests
+bin
+.wordpress-org
