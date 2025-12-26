@@ -1,7 +1,7 @@
 === Romeo Redirect Manager ===
 Contributors: harsh98trivedi
-Donate link: https://harsh98trivedi.github.io/links
-Tags: redirection, redirect, 301, 308, seo
+Tags: redirection, redirect, 301, 308, seo, url, link, management, 404
+Donate link: https://github.com/sponsors/harsh98trivedi
 Requires at least: 5.6
 Tested up to: 6.9
 Stable tag: 1.0.0
@@ -9,99 +9,72 @@ Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-A modern, lightweight redirect manager. Redirect slugs to external URLs or internal posts with style, featuring a beautiful UI and 308 support.
+Manage your site's redirects with a modern, beautiful card-based interface. Supports 301, 302, 307, and 308 redirects with built-in hit counting and internal linking.
 
 == Description ==
 
-**Romeo Redirect Manager** is the modern way to manage your WordPress redirects. Say goodbye to clunky, outdated interfaces. This plugin offers a sleek, card-based dashboard that makes managing your links a joy.
+# Romeo Redirect Manager – The Modern Way to Manage WordPress Redirects
 
-Designed with performance and aesthetics in mind, Romeo Redirect Manager supports not just standard 301 and 302 redirects, but also the modern **308 Permanent Redirect**, ensuring your SEO is future-proof.
+**Romeo Redirect Manager** is a sleek, lightweight, and powerful solution for managing URL redirections on your WordPress site.
+Built for **SEO experts, bloggers, and developers**, it replaces clunky old tables with a beautiful **card-based dashboard** that makes managing links a joy.
 
-= Key Features =
+### Why Use Romeo Redirect Manager?
 
-* **Modern UI/UX** — A beautiful, React-inspired interface using native JavaScript (no heavy libraries).
-* **Visual Card Layout** — Manage redirects using clear, interactive cards instead of boring tables.
-* **308 Support** — Full support for 308 Permanent Redirects (Preserve Method), alongside 301, 302, and 307.
-* **Instant Search** — Real-time searching of your redirects by slug or target URL.
-* **Internal Linking** — Intelligent autocomplete search to easily redirect to your internal Posts and Pages.
-* **Hit Counting** — Track how many times your redirects are used.
-* **Zero Bloat** — Lightweight and fast, keeping your site speed optimized.
+**Modern Card UI**: Say goodbye to boring tables. Manage redirects with a visual, interactive card interface.
+**Full 308 Support**: Future-proof your SEO with modern **308 Permanent Redirects** (Preserve Method), alongside standard 301, 302, and 307.
+**Instant Search**: Filter through hundreds of redirects instantly by slug or target URL.
+**Internal Linking**: Intelligent autocomplete lets you search and link to your existing Posts and Pages in seconds.
+**Hit Counting**: Built-in analytics tracker to see exactly how many times each redirect is used.
+**Zero Bloat**: Native JavaScript, optimized database queries, and no heavy external dependencies.
 
-= HTTP Status Codes Explained =
+### Perfect For:
 
-* **301 (Moved Permanently)** — Traditional permanent redirect for SEO.
-* **302 (Found)** — Temporary redirect, search engines keep original URL indexed.
-* **307 (Temporary Redirect)** — Temporary redirect that preserves the HTTP method.
-* **308 (Permanent Redirect)** — Modern permanent redirect that preserves the HTTP method (recommended).
+- **SEO Specialists** — Fix broken links and optimize site structure with 301/308 redirects.
+- **Marketers** — Create short, memorable links (e.g., `/offer`) for social media campaigns.
+- **Bloggers** — Quickly fix typos or update old content URLs without losing traffic.
+- **Developers** — A clean, standardized code base that plays nicely with caching and other plugins.
 
-= Why Choose Romeo Redirect Manager? =
-
-* No bloated features you'll never use
-* Clean, modern interface that's a pleasure to work with
-* Built following WordPress coding standards
-* Zero external dependencies for maximum performance
-* Full compatibility with the latest WordPress version
+Complete control over your site's traffic flow, wrapped in a design you'll actually enjoy using.
 
 == Installation ==
 
-= From your WordPress dashboard =
-
-1. Go to **Plugins → Add New**.
-2. Search for **Romeo Redirect Manager**.
-3. Click **Install Now** and then **Activate**.
-
-= From WordPress.org =
-
-1. Download the plugin zip file.
-2. Go to **Plugins → Add New → Upload Plugin**.
-3. Upload the zip file and click **Install Now**.
-4. Activate the plugin.
-
-= Manual installation =
-
-1. Upload the `romeo-redirect-manager` folder to the `/wp-content/plugins/` directory.
-2. Activate the plugin through the 'Plugins' menu in WordPress.
-3. Click on "Romeo Redirect Manager" in the admin sidebar.
-4. Start creating redirects!
+1. Upload the plugin folder to `/wp-content/plugins/romeo-redirect-manager/` or install via the Plugin Installer.
+2. Activate through the "Plugins" menu.
+3. Click on **Romeo Redirect Manager** in the admin sidebar.
+4. Click "Create New Redirect" to start adding your rules.
 
 == Frequently Asked Questions ==
 
-= What's the difference between 301 and 308 redirects? =
+= What is the difference between 301 and 308 redirects? =
+Both are permanent redirects. However, **301** may change the HTTP method (e.g., POST becomes GET), while **308** preserves it. 308 is the modern standard for permanent redirects.
 
-Both are permanent redirects, but 308 preserves the HTTP method (GET, POST, etc.) while 301 may change POST to GET. For most use cases, 308 is the modern recommended choice.
+= Does this track how many people use the redirects? =
+Yes! Every redirect card shows a live "Hit Counter" so you can easily identify your most popular links.
 
-= Will this affect my site's performance? =
+= Will this slow down my website? =
+No. Romeo Redirect Manager is built for performance. It uses lightweight native code and runs efficient database queries only when necessary.
 
-No! Romeo Redirect Manager is built with performance in mind. It uses native JavaScript with zero heavy dependencies and optimized database queries.
-
-= Can I redirect to internal posts? =
-
-Yes! The plugin includes an intelligent autocomplete feature that lets you search and select any post or page on your site as a redirect target.
-
-= Is this plugin compatible with caching plugins? =
-
-Yes, Romeo Redirect Manager works great alongside popular caching plugins. Redirects are processed at the PHP level before caching kicks in.
-
-= How do I track redirect usage? =
-
-Each redirect card displays a hit counter showing how many times it has been used. This helps you identify your most popular links.
+= Can I redirect to internal posts/pages easily? =
+Yes. The "Target Type" selector allows you to choose "Internal Post" or "Internal Page", which gives you a search bar to instantly find any Page or Post on your site.
 
 == Screenshots ==
 
 1. **Dashboard** — The modern card-based redirect management interface.
 2. **Creator Panel** — Easily create new redirects with internal post search.
-3. **Search** — Instant filtering logic for finding your links.
+3. **Bulk Actions** — Bulk delete redirects.
+4. **Responsive** — Responsive design for all screen sizes.
 
 == Changelog ==
 
-= 1.0.0 =
+= 1.0.0 - 2025-12-27 =
 * Initial release.
 * Added support for 301, 302, 307, and 308 redirects.
 * Introduced modern card-based UI.
 * Real-time instant search functionality.
 * Internal post/page autocomplete linking.
 * Hit counting for redirect tracking.
-* Full WordPress coding standards compliance.
+* Responsive design for all screen sizes.
+* Bulk delete redirects.
 
 == Upgrade Notice ==
 

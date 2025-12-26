@@ -49,7 +49,7 @@ class Romerema_Admin {
     public function render_admin_page() {
         $redirects = get_option( $this->option_key, array() );
         $redirects = array_reverse( $redirects ); // Newest first
-        $logo_url = plugins_url( 'assets/images/romeo-redirect-manager.svg', dirname( __FILE__ ) . '/../romeo-redirect-manager.php' );
+        $logo_url = plugins_url( 'assets/images/logo.svg', dirname( __FILE__ ) . '/../romeo-redirect-manager.php' );
         ?>
         <div class="rr-wrapper">
             
