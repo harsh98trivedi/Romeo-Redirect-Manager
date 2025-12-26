@@ -1,6 +1,6 @@
 === Romeo Redirect Manager ===
 Contributors: harsh98trivedi
-Tags: redirection, redirect, 301, 308, seo, url, link, management, 404
+Tags: redirection, redirect, 301, 308, seo
 Donate link: https://github.com/sponsors/harsh98trivedi
 Requires at least: 5.6
 Tested up to: 6.9
@@ -9,7 +9,7 @@ Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Manage your site's redirects with a modern, beautiful card-based interface. Supports 301, 302, 307, and 308 redirects with built-in hit counting and internal linking.
+Modern redirect manager with a beautiful card UI. Supports 301, 302, 307, 308, hit counting, and internal linking.
 
 == Description ==
 
