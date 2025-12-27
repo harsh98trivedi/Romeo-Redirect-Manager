@@ -14,10 +14,11 @@ jobs:
       - name: WordPress Plugin Deploy
         id: deploy
         uses: 10up/action-wordpress-plugin-deploy@stable
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
         with:
           generate-zip: true
-          svn-username: ${{ secrets.SVN_USERNAME }}
-          svn-password: ${{ secrets.SVN_PASSWORD }}
           asset-dir: .wordpress-org
 
       - name: Rename Zip to Repository Name
