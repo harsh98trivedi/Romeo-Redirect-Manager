@@ -20,3 +20,5 @@ vendor/
 # Plugin Specific / Submission Files
 wordpress-org-submission-info.txt
 svn-ignore.txt
+svn-repo/
+
