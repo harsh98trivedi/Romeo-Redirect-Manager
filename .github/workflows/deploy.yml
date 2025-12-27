@@ -6,31 +6,34 @@ on:
     tags:
       - "*"
 jobs:
-  deploy:
-    name: Deploy to WordPress.org
+  build:
+    name: Build Zip
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: WordPress Plugin Deploy
-        id: deploy
+
+      - name: Set SLUG
+        run: echo "SLUG=$(echo '${{ github.event.repository.name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Build Zip
         uses: 10up/action-wordpress-plugin-deploy@stable
+        id: build
         env:
-          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
-          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-          SLUG: romeo-redirect-manager
+          SLUG: ${{ env.SLUG }}
           ASSETS_DIR: .wordpress-org
         with:
           generate-zip: true
+          dry-run: true
 
       - name: Rename Zip to Repository Name
         run: |
-          mv ${{ steps.deploy.outputs.zip-path }} ${{ github.event.repository.name }}.zip
-          echo "ZIP_PATH=${{ github.event.repository.name }}.zip" >> $GITHUB_ENV
+          mv ${{ steps.build.outputs.zip-path }} ${{ env.SLUG }}.zip
+          echo "ZIP_PATH=${{ env.SLUG }}.zip" >> $GITHUB_ENV
 
       - name: Upload Zip as Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.event.repository.name }}
+          name: ${{ env.SLUG }}
           path: ${{ env.ZIP_PATH }}
 
       - name: Upload to Release
@@ -38,3 +41,24 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: ${{ env.ZIP_PATH }}
+
+  deploy:
+    name: Deploy to WordPress.org
+    runs-on: ubuntu-latest
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set SLUG
+        run: echo "SLUG=$(echo '${{ github.event.repository.name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: WordPress Plugin Deploy
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: ${{ env.SLUG }}
+          ASSETS_DIR: .wordpress-org
+        with:
+          generate-zip: true
