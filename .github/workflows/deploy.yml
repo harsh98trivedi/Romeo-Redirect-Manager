@@ -16,21 +16,19 @@ jobs:
         run: echo "SLUG=$(echo '${{ github.event.repository.name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Build Zip
-        uses: 10up/action-wordpress-plugin-deploy@stable
-        id: build
-        env:
-          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
-          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-          SLUG: ${{ env.SLUG }}
-          ASSETS_DIR: .wordpress-org
-        with:
-          generate-zip: true
-          dry-run: true
-
-      - name: Rename Zip to Repository Name
         run: |
-          mv ${{ steps.build.outputs.zip-path }} ${{ env.SLUG }}.zip
-          echo "ZIP_PATH=${{ env.SLUG }}.zip" >> $GITHUB_ENV
+          # Create a temporary directory for the build
+          TMP_DIR=$(mktemp -d)
+          
+          # Copy files using rsync, respecting .distignore
+          rsync -r --exclude-from=.distignore . "$TMP_DIR/${{ env.SLUG }}"
+          
+          # Navigate to temp dir and zip the folder
+          cd "$TMP_DIR"
+          zip -r "$GITHUB_WORKSPACE/${{ env.SLUG }}.zip" "${{ env.SLUG }}"
+          
+          # Set the zip path env var for the upload step
+          echo "ZIP_PATH=$GITHUB_WORKSPACE/${{ env.SLUG }}.zip" >> $GITHUB_ENV
 
       - name: Upload Zip as Artifact
         uses: actions/upload-artifact@v4
