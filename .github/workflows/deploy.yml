@@ -17,9 +17,10 @@ jobs:
         env:
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: romeo-redirect-manager
+          ASSETS_DIR: .wordpress-org
         with:
           generate-zip: true
-          asset-dir: .wordpress-org
 
       - name: Rename Zip to Repository Name
         run: |
