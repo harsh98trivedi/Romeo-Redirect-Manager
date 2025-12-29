@@ -35,6 +35,9 @@ jobs:
       - name: Upload Zip as Artifact
         uses: actions/upload-artifact@v4
         with:
+          name: ${{ env.SLUG }}
+          path: ${{ env.ZIP_PATH }}
+
       - name: Extract Release Notes
         if: startsWith(github.ref, 'refs/tags/')
         run: |
