@@ -39,8 +39,8 @@ class Romerema_Admin {
         }
 
         $main_file = dirname( __FILE__ ) . '/../romeo-redirect-manager.php';
-        wp_enqueue_style( 'romeo-admin-css', plugins_url( 'assets/css/admin.css', $main_file ), array(), '1.1.1' );
-        wp_enqueue_script( 'romeo-admin-js', plugins_url( 'assets/js/admin.js', $main_file ), array(), '1.1.1', true );
+        wp_enqueue_style( 'romeo-admin-css', plugins_url( 'assets/css/admin.css', $main_file ), array(), '1.1.2' );
+        wp_enqueue_script( 'romeo-admin-js', plugins_url( 'assets/js/admin.js', $main_file ), array(), '1.1.2', true );
 
         wp_localize_script( 'romeo-admin-js', 'romerema_vars', array(
             'nonce' => wp_create_nonce( 'romerema_save_nonce' ),
