@@ -160,7 +160,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Save Form
     dom.form.addEventListener('submit', (e) => {
-        e.preventDefault();
+        handleFormSubmit(e);
+    });
+
+    // Keyboard Shortcuts
+    dom.form.addEventListener('keydown', (e) => {
+        // Ctrl/Cmd + Enter anywhere in form
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            handleFormSubmit(e);
+        }
+    });
+
+    // Enter on Target URL input
+    const targetUrlInput = dom.form.querySelector('[name="target_url"]');
+    if (targetUrlInput) {
+        targetUrlInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleFormSubmit(e);
+            }
+        });
+    }
+
+    function handleFormSubmit(e) {
+        if(e) e.preventDefault();
         const formData = new FormData(dom.form);
         formData.append('action', 'romerema_save_redirect');
         formData.append('nonce', romerema_vars.nonce);
@@ -196,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.btnSave.textContent = originalText;
             dom.btnSave.disabled = false;
         });
-    });
+    }
 
     // Global Actions (Edit/Delete)
     window.rrDelete = function(id) {
@@ -389,6 +413,159 @@ document.addEventListener('DOMContentLoaded', () => {
                 bulkDeleteBtn.innerHTML = btnText;
                 bulkDeleteBtn.disabled = false;
             });
+        });
+    }
+    // ==========================================
+    // EXPORT / IMPORT LOGIC
+    // ==========================================
+    
+    // Export
+    const btnExport = document.getElementById('rr-btn-export');
+    if(btnExport) { 
+        btnExport.addEventListener('click', (e) => {
+            e.preventDefault();
+            const originalText = btnExport.innerHTML;
+            btnExport.innerHTML = '<span class="dashicons dashicons-update" style="animation:spin 2s linear infinite;"></span> Exporting...';
+            btnExport.style.pointerEvents = 'none';
+
+            fetch(ajaxurl + '?action=romerema_export_redirects&nonce=' + romerema_vars.export_nonce)
+            .then(res => res.json())
+            .then(res => {
+                if(res.success) {
+                    const dataStr = JSON.stringify(res.data, null, 2);
+                    const blob = new Blob([dataStr], { type: "application/json" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = "romeo-redirects-backup.json";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                } else {
+                    alert('Export failed: ' + (res.data || 'Unknown error'));
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Export error');
+            })
+            .finally(() => {
+                btnExport.innerHTML = originalText;
+                btnExport.style.pointerEvents = 'auto';
+            });
+        });
+    }
+
+    // Import
+    const btnImport = document.getElementById('rr-btn-import');
+    const fileInput = document.getElementById('rr-import-file');
+    const importModal = document.getElementById('rr-import-modal');
+    const btnCloseImport = document.getElementById('rr-btn-close-import');
+    const btnMerge = document.getElementById('rr-btn-merge');
+    const btnOverwrite = document.getElementById('rr-btn-overwrite');
+    const importUpdateCheckbox = document.getElementById('rr-import-update');
+    
+    let pendingImportData = null;
+
+    if(btnImport && fileInput) {
+        btnImport.addEventListener('click', () => {
+            fileInput.value = ''; // Reset
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                pendingImportData = e.target.result;
+                // Show Modal
+                if(importModal) importModal.classList.remove('hidden');
+            };
+            reader.readAsText(file);
+        });
+    }
+
+    if(btnCloseImport) {
+        btnCloseImport.addEventListener('click', () => {
+            if(importModal) importModal.classList.add('hidden');
+            pendingImportData = null;
+        });
+    }
+
+    function doImport(mode) {
+        if(!pendingImportData) return;
+        
+        const btn = mode === 'merge' ? btnMerge : btnOverwrite;
+        const originalText = btn.textContent;
+        btn.textContent = 'Importing...';
+        btn.disabled = true;
+        
+        // Disable other button too
+        const otherBtn = mode === 'merge' ? btnOverwrite : btnMerge;
+        if(otherBtn) otherBtn.disabled = true;
+
+        const updateExisting = importUpdateCheckbox ? importUpdateCheckbox.checked : false;
+
+        const formData = new FormData();
+        formData.append('action', 'romerema_import_redirects');
+        formData.append('nonce', romerema_vars.import_nonce);
+        formData.append('data', pendingImportData);
+        formData.append('mode', mode);
+        formData.append('update_existing', updateExisting);
+
+        fetch(ajaxurl, { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(res => {
+            if(res.success) {
+                alert('Successfully imported ' + res.data + ' redirects.');
+                location.reload();
+            } else {
+                alert('Import failed: ' + (res.data || 'Unknown error'));
+                btn.textContent = originalText;
+                btn.disabled = false;
+                if(otherBtn) otherBtn.disabled = false;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Import error');
+            btn.textContent = originalText;
+            btn.disabled = false;
+            if(otherBtn) otherBtn.disabled = false;
+        });
+    }
+
+    if(btnMerge) btnMerge.addEventListener('click', () => doImport('merge'));
+    if(btnOverwrite) {
+        btnOverwrite.addEventListener('click', () => {
+             if(confirm('Are you sure you want to OVERWRITE? This will delete all existing redirects!')) {
+                 doImport('overwrite');
+             }
+        });
+    }
+
+    // Select All Logic
+    const btnSelectAll = document.getElementById('rr-bulk-select-all-btn');
+    if(btnSelectAll) {
+        btnSelectAll.addEventListener('click', () => {
+             const allCheckboxes = document.querySelectorAll('.rr-bulk-checkbox');
+             
+             allCheckboxes.forEach(cb => {
+                 const card = cb.closest('.rr-card');
+                 // Only select if card is visible (respects search)
+                 if(card && card.style.display !== 'none') {
+                     if(!cb.checked) {
+                         cb.checked = true;
+                         selectedIds.add(cb.value);
+                         card.style.borderColor = getComputedStyle(document.documentElement).getPropertyValue('--rr-primary');
+                         card.style.backgroundColor = '#fff1f2';
+                     }
+                 }
+             });
+             updateBulkUI();
         });
     }
 });

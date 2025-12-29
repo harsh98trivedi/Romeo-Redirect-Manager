@@ -17,6 +17,8 @@ class Romerema_Admin {
         add_action( 'wp_ajax_romerema_delete_redirect', array( $this, 'ajax_delete_redirect' ) );
         add_action( 'wp_ajax_romerema_bulk_delete', array( $this, 'ajax_bulk_delete' ) );
         add_action( 'wp_ajax_romerema_search_posts', array( $this, 'ajax_search_posts' ) );
+        add_action( 'wp_ajax_romerema_export_redirects', array( $this, 'ajax_export_redirects' ) );
+        add_action( 'wp_ajax_romerema_import_redirects', array( $this, 'ajax_import_redirects' ) );
     }
 
     public function add_admin_menu() {
@@ -37,12 +39,14 @@ class Romerema_Admin {
         }
 
         $main_file = dirname( __FILE__ ) . '/../romeo-redirect-manager.php';
-        wp_enqueue_style( 'romeo-admin-css', plugins_url( 'assets/css/admin.css', $main_file ), array(), '1.1' );
-        wp_enqueue_script( 'romeo-admin-js', plugins_url( 'assets/js/admin.js', $main_file ), array(), '1.1', true );
+        wp_enqueue_style( 'romeo-admin-css', plugins_url( 'assets/css/admin.css', $main_file ), array(), '1.1.1' );
+        wp_enqueue_script( 'romeo-admin-js', plugins_url( 'assets/js/admin.js', $main_file ), array(), '1.1.1', true );
 
         wp_localize_script( 'romeo-admin-js', 'romerema_vars', array(
             'nonce' => wp_create_nonce( 'romerema_save_nonce' ),
-            'delete_nonce' => wp_create_nonce( 'romerema_delete_nonce' )
+            'delete_nonce' => wp_create_nonce( 'romerema_delete_nonce' ),
+            'import_nonce' => wp_create_nonce( 'romerema_import_nonce' ),
+            'export_nonce' => wp_create_nonce( 'romerema_export_nonce' )
         ));
     }
 
@@ -64,7 +68,15 @@ class Romerema_Admin {
                         <small>by <a href="https://harsh98trivedi.github.io/" target="_blank" style="color:#f0405f; text-decoration:none; font-weight:600;">Harsh Trivedi</a></small>
                     </div>
                 </div>
-                <div>
+                <!-- Action Buttons: Import/Export/New -->
+                <div style="display: flex; gap: 8px;">
+                    <input type="file" id="rr-import-file" accept=".json" style="display:none;" />
+                    <button id="rr-btn-import" class="rr-btn rr-btn-secondary header-action-btn">
+                        <span class="dashicons dashicons-upload" style="font-size:18px; width:18px; height:18px;"></span> <span class="rr-btn-text"><?php esc_html_e( 'Import', 'romeo-redirect-manager' ); ?></span>
+                    </button>
+                    <button id="rr-btn-export" class="rr-btn rr-btn-secondary header-action-btn">
+                        <span class="dashicons dashicons-download" style="font-size:18px; width:18px; height:18px;"></span> <span class="rr-btn-text"><?php esc_html_e( 'Export', 'romeo-redirect-manager' ); ?></span>
+                    </button>
                     <button id="rr-btn-new" class="rr-btn rr-btn-primary">
                         <span class="dashicons dashicons-plus-alt2" style="font-size:18px; width:18px; height:18px;"></span> <span class="rr-btn-text"><?php esc_html_e( 'Create New Redirect', 'romeo-redirect-manager' ); ?></span>
                     </button>
@@ -232,10 +244,35 @@ class Romerema_Admin {
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
+                <!-- Import Modal -->
+            <div id="rr-import-modal" class="rr-modal-overlay hidden" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9999; display:flex; align-items:center; justify-content:center;">
+                <div class="rr-creator" style="width:400px; margin:0; max-width:90%; position:relative;">
+                    <h3 style="margin-bottom:12px;">Import Redirects</h3>
+                    <p style="color:#64748b; margin-bottom:16px;">How should we handle existing redirects?</p>
+                    
+                    <div style="margin-bottom: 24px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <label style="font-weight:500; display:flex; align-items:center; gap:8px; cursor:pointer; font-size: 13px; color: #334155;">
+                            <input type="checkbox" id="rr-import-update" checked style="accent-color: var(--rr-primary);"> 
+                            Update existing redirects with same slug
+                        </label>
+                    </div>
+
+                    <div style="display:flex; gap:12px;">
+                        <button id="rr-btn-merge" class="rr-btn rr-btn-primary" style="flex:1; justify-content:center;">Merge</button>
+                        <button id="rr-btn-overwrite" class="rr-btn rr-btn-secondary" style="flex:1; justify-content:center; color:#ef4444; border-color:#ef4444;">Overwrite</button>
+                    </div>
+                    <button id="rr-btn-close-import" style="position:absolute; top:28px; right:20px; background:none; border:none; cursor:pointer; padding:4px;">
+                        <span class="dashicons dashicons-no-alt" style="color:#94a3b8;"></span>
+                    </button>
+                </div>
             </div>
+        </div>
             <!-- Bulk Actions Floating Bar -->
             <div id="rr-bulk-bar" class="rr-bulk-bar hidden">
                 <div class="rr-bulk-count"><span id="rr-selected-count">0</span> selected</div>
+                <button id="rr-bulk-select-all-btn" class="rr-btn-select-all-bulk" style="margin-right: 12px; background:none; border:none; color:#64748b; cursor:pointer; font-weight:600; font-size:13px; display:flex; align-items:center; gap:4px;">
+                    <span class="dashicons dashicons-yes-alt"></span> <span class="rr-btn-text">Select All</span>
+                </button>
                 <button id="rr-bulk-clear-btn" class="rr-btn-clear-bulk">
                     <span class="dashicons dashicons-no-alt"></span> <span class="rr-btn-text">Clear Selection</span>
                 </button>
@@ -402,5 +439,95 @@ class Romerema_Admin {
         }
         wp_reset_postdata();
         wp_send_json_success( $results );
+    }
+
+    public function ajax_export_redirects() {
+        check_ajax_referer( 'romerema_export_nonce', 'nonce' );
+        if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( 'Permission denied' );
+
+        $redirects = get_option( $this->option_key, array() );
+        
+        // Remove hits and ID from export
+        foreach ( $redirects as &$redirect ) {
+            if ( isset( $redirect['hits'] ) ) unset( $redirect['hits'] );
+            if ( isset( $redirect['id'] ) ) unset( $redirect['id'] );
+        }
+        
+        wp_send_json_success( $redirects );
+    }
+
+    public function ajax_import_redirects() {
+        check_ajax_referer( 'romerema_import_nonce', 'nonce' );
+        if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( 'Permission denied' );
+
+        $mode = isset( $_POST['mode'] ) ? sanitize_text_field( wp_unslash( $_POST['mode'] ) ) : 'merge';
+        $update_existing = isset( $_POST['update_existing'] ) && $_POST['update_existing'] === 'true';
+
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Processed via json_decode immediately
+        $json_data = isset( $_POST['data'] ) ? wp_unslash( $_POST['data'] ) : '';
+        
+        $imported_items = json_decode( $json_data, true );
+
+        if ( ! is_array( $imported_items ) ) {
+            wp_send_json_error( 'Invalid JSON data' );
+        }
+
+        // Validate structure
+        $valid_items = array();
+        foreach ( $imported_items as $item ) {
+            if ( isset( $item['slug'] ) && isset( $item['target'] ) ) {
+                // Sanitize
+                $valid_items[] = array(
+                    'id'     => isset( $item['id'] ) ? sanitize_text_field( $item['id'] ) : uniqid(),
+                    'slug'   => sanitize_title( $item['slug'] ),
+                    'type'   => isset( $item['type'] ) ? sanitize_text_field( $item['type'] ) : 'url',
+                    'target' => ($item['type'] === 'url') ? esc_url_raw( $item['target'] ) : intval( $item['target'] ),
+                    'code'   => isset( $item['code'] ) ? intval( $item['code'] ) : 301,
+                    'hits'   => isset( $item['hits'] ) ? intval( $item['hits'] ) : 0
+                );
+            }
+        }
+
+        if ( empty( $valid_items ) ) {
+            wp_send_json_error( 'No valid redirects found in file.' );
+        }
+
+        $current_redirects = get_option( $this->option_key, array() );
+
+        if ( $mode === 'overwrite' ) {
+            $redirects = $valid_items;
+        } else {
+            // Merge: Add new ones, but avoid duplicate slugs? 
+            // User requirement: "Merge or Overwrite".
+            // Merge usually means append. Duplicate slugs are tricky.
+            // Let's append, but if slug exists, maybe update it? Or skip?
+            // Simple approach: Append all, let user duplicate-check later? 
+            // Better: Check for SLUG collisions. If collision, update existing? Or skip?
+            // "Merge" usually implies "Add missing". 
+            // Let's go with: Update existing slugs, add new ones.
+            
+            $redirects = $current_redirects;
+            foreach ( $valid_items as $new_item ) {
+                $found = false;
+                foreach ( $redirects as &$existing ) {
+                    if ( $existing['slug'] === $new_item['slug'] ) {
+                        // MERGE CONFLICT: Slug exists
+                        if ( $update_existing ) {
+                            // Merge/Update the existing one with import data
+                            $existing = $new_item; 
+                        }
+                        // If not updating, we just skip it (preserve existing)
+                        $found = true;
+                        break;
+                    }
+                }
+                if ( ! $found ) {
+                    $redirects[] = $new_item;
+                }
+            }
+        }
+
+        update_option( $this->option_key, $redirects );
+        wp_send_json_success( count( $valid_items ) );
     }
 }

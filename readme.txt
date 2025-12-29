@@ -4,7 +4,7 @@ Tags: redirection, redirect, 301, 308, seo
 Donate link: https://github.com/sponsors/harsh98trivedi
 Requires at least: 5.6
 Tested up to: 6.9
-Stable tag: 1.0.0
+Stable tag: 1.1.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -66,6 +66,15 @@ Yes. The "Target Type" selector allows you to choose "Internal Post" or "Interna
 
 == Changelog ==
 
+= 1.1.1 - 2025-12-28 =
+* Added Import/Export functionality with merge options.
+* Added "Select All" functionality for bulk actions.
+* Added keyboard shortcuts (Enter/Ctrl+Enter) for quick redirect creation.
+* Optimized Import to handle bulk creation without IDs.
+* Removed Import/Export buttons on mobile devices.
+* Fixed mobile layout and design issues.
+* Removed hits and IDs from export tracking.
+
 = 1.0.0 - 2025-12-27 =
 * Initial release.
 * Added support for 301, 302, 307, and 308 redirects.
@@ -78,5 +87,5 @@ Yes. The "Target Type" selector allows you to choose "Internal Post" or "Interna
 
 == Upgrade Notice ==
 
-= 1.0.0 =
-Initial release of Romeo Redirect Manager. Enjoy the modern redirect management experience!
+= 1.1.1 =
+Major update: Import/Export, Bulk Actions, Keyboard Shortcuts, and Mobile Fixes.
