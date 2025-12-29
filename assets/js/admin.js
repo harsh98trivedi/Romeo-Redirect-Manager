@@ -437,7 +437,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = "romeo-redirects-backup.json";
+                    const date = new Date();
+                    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = months[date.getMonth()];
+                    const year = date.getFullYear();
+                    const dateStr = `${day}-${month}-${year}`;
+                    a.download = `romeo-redirects-backup-${dateStr}.json`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
