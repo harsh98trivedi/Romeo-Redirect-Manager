@@ -35,14 +35,19 @@ jobs:
       - name: Upload Zip as Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.SLUG }}
-          path: ${{ env.ZIP_PATH }}
-
+      - name: Extract Release Notes
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          # Extract content between the current version header and the next version header
+          awk "/^## $VERSION/{flag=1;next}/^## /{flag=0}flag" CHANGELOG.md > RELEASE_NOTES.md
+          
       - name: Upload to Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
           files: ${{ env.ZIP_PATH }}
+          body_path: RELEASE_NOTES.md
 
   deploy:
     name: Deploy to WordPress.org
