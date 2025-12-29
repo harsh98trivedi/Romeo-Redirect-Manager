@@ -5,7 +5,7 @@
 [![WordPress](https://img.shields.io/badge/WordPress-5.6+-blue.svg)](https://wordpress.org/)
 [![PHP](https://img.shields.io/badge/PHP-7.4+-purple.svg)](https://php.net/)
 [![License](https://img.shields.io/badge/License-GPL--2.0+-green.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
-[![Version](https://img.shields.io/badge/Version-1.0.0-orange.svg)](https://github.com/harsh98trivedi/Redirection-Romeo)
+[![Version](https://img.shields.io/badge/Version-1.1.1-orange.svg)](https://github.com/harsh98trivedi/Redirection-Romeo)
 
 **Romeo Redirect Manager** is a modern, lightweight WordPress plugin designed to make redirect management effortless and beautiful. Say goodbye to clunky tables and outdated interfaces — welcome to a sleek, card-based dashboard that supports the latest SEO standards, including **308 Permanent Redirects**.
 
@@ -44,9 +44,9 @@
 
 ### 📥 Download
 
-[![Download](https://img.shields.io/badge/Download-v1.0.0-brightgreen.svg)](https://github.com/harsh98trivedi/Redirection-Romeo/releases/download/1.0.0/romeo-redirect-manager.zip)
+[![Download](https://img.shields.io/badge/Download-v1.1.1-brightgreen.svg)](https://github.com/harsh98trivedi/Redirection-Romeo/releases/download/1.1.1/romeo-redirect-manager.zip)
 
-👉 [**Click here to Download**](https://github.com/harsh98trivedi/Redirection-Romeo/releases/download/1.0.0/romeo-redirect-manager.zip)
+👉 [**Click here to Download**](https://github.com/harsh98trivedi/Redirection-Romeo/releases/download/1.1.1/romeo-redirect-manager.zip)
 
 ### From WordPress Admin
 1. Download the latest release `.zip` file from the link above

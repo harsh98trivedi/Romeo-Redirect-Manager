@@ -75,6 +75,6 @@ jobs:
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
           SLUG: ${{ env.SLUG }}
-          ASSETS_DIR: .wordpress-org
+          ASSETS_DIR: assets/images
         with:
           generate-zip: true
