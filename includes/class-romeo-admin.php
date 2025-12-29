@@ -514,6 +514,14 @@ class Romerema_Admin {
                         // MERGE CONFLICT: Slug exists
                         if ( $update_existing ) {
                             // Merge/Update the existing one with import data
+                            // Preserve the ID of the existing item
+                            $new_item['id'] = $existing['id'];
+                            
+                            // Preserve hits if the imported item has 0 hits (which is standard from our export)
+                            if ( empty($new_item['hits']) ) {
+                                $new_item['hits'] = $existing['hits'];
+                            }
+
                             $existing = $new_item; 
                         }
                         // If not updating, we just skip it (preserve existing)
