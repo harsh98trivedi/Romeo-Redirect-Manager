@@ -60,8 +60,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Set SLUG
-        run: echo "SLUG=$(echo '${{ github.event.repository.name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+      - name: Set SLUG and VERSION
+        run: |
+          echo "SLUG=$(echo '${{ github.event.repository.name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          if [[ "${{ github.ref }}" == "refs/tags/"* ]]; then
+             echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          else
+             echo "VERSION=master" >> $GITHUB_ENV
+          fi
 
       - name: WordPress Plugin Deploy
         uses: 10up/action-wordpress-plugin-deploy@stable

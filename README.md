@@ -30,9 +30,13 @@
 |-----------|---------------|
 | ![Dashboard](assets/images/screenshot-1.jpg) | ![Creator Panel](assets/images/screenshot-2.jpg) |
 
-| Bulk Actions | Mobile Responsive |
-|--------------|-------------------|
-| ![Bulk Actions](assets/images/screenshot-3.jpg) | ![Mobile Responsive](assets/images/screenshot-4.jpg) |
+| Bulk Actions | Import/Export |
+|--------------|---------------|
+| ![Bulk Actions](assets/images/screenshot-3.jpg) | ![Import/Export](assets/images/screenshot-4.jpg) |
+
+| Mobile Responsive | |
+|-------------------|---|
+| ![Mobile Responsive](assets/images/screenshot-5.jpg) | |
 
 ---
 

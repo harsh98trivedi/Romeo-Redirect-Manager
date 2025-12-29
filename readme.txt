@@ -62,7 +62,8 @@ Yes. The "Target Type" selector allows you to choose "Internal Post" or "Interna
 1. **Dashboard** — The modern card-based redirect management interface.
 2. **Creator Panel** — Easily create new redirects with internal post search.
 3. **Bulk Actions** — Bulk delete redirects.
-4. **Responsive** — Responsive design for all screen sizes.
+4. **Import/Export** — Import and export redirects with ease.
+5. **Responsive** — Responsive design for all screen sizes.
 
 == Changelog ==
 
