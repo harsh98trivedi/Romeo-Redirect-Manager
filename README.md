@@ -6,6 +6,7 @@
 [![PHP](https://img.shields.io/badge/PHP-7.4+-purple.svg)](https://php.net/)
 [![License](https://img.shields.io/badge/License-GPL--2.0+-green.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
 [![Version](https://img.shields.io/badge/Version-1.2.1-orange.svg)](https://github.com/harsh98trivedi/Romeo-Redirect-Manager)
+[![Rate this plugin](https://img.shields.io/badge/Rate_this_plugin-★★★★★-yellow.svg)](https://wordpress.org/support/plugin/romeo-redirect-manager/reviews/#new-post)
 
 **Romeo Redirect Manager** is a modern, lightweight WordPress plugin designed to make redirect management effortless and beautiful. Say goodbye to clunky tables and outdated interfaces — welcome to a sleek, card-based dashboard that supports the latest SEO standards, including **308 Permanent Redirects**.
 
@@ -28,21 +29,12 @@
 
 ## 📸 Screenshots
 
-| Dashboard | Creator Panel |
-|-----------|---------------|
-| ![Dashboard](assets/images/screenshot-1.jpg) | ![Creator Panel](assets/images/screenshot-2.jpg) |
-
-| Bulk Actions | Import/Export |
-|--------------|---------------|
-| ![Bulk Actions](assets/images/screenshot-3.jpg) | ![Import/Export](assets/images/screenshot-4.jpg) |
-
-| Mobile Responsive | |
-|-------------------|---|
-| ![Mobile Responsive](assets/images/screenshot-5.jpg) | |
-
-| Drag-to-Select | 404 Management |
-|----------------|----------------|
-| ![Drag Selection](assets/images/screenshot-6.png) | ![404 Settings](assets/images/screenshot-7.png) |
+| | |
+|:---:|:---:|
+| **Dashboard** <br> ![Dashboard](assets/images/screenshot-1.jpg) | **Creator Panel** <br> ![Creator Panel](assets/images/screenshot-2.jpg) |
+| **Bulk Actions** <br> ![Bulk Actions](assets/images/screenshot-3.jpg) | **Import/Export** <br> ![Import/Export](assets/images/screenshot-4.jpg) |
+| **Mobile Responsive** <br> ![Mobile Responsive](assets/images/screenshot-5.jpg) | **Drag-to-Select** <br> ![Drag Selection](assets/images/screenshot-6.png) |
+| **404 Management** <br> ![404 Settings](assets/images/screenshot-7.png) | |
 
 ---
 
