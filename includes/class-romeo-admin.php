@@ -86,6 +86,9 @@ class Romerema_Admin {
                 <!-- Action Buttons: Import/Export/New -->
                 <div style="display: flex; gap: 8px;">
                     <input type="file" id="rr-import-file" accept=".json" style="display:none;" />
+                    <a href="https://wordpress.org/support/plugin/romeo-redirect-manager/reviews/#new-post" target="_blank" rel="noopener noreferrer" class="rr-btn rr-btn-secondary header-action-btn" style="text-decoration:none; display:inline-flex; align-items:center;">
+                        <span class="dashicons dashicons-star-filled" style="font-size:18px; width:18px; height:18px; color:#fbbf24;"></span> <span class="rr-btn-text"><?php esc_html_e( 'Rate', 'romeo-redirect-manager' ); ?></span>
+                    </a>
                     <button id="rr-btn-import" class="rr-btn rr-btn-secondary header-action-btn">
                         <span class="dashicons dashicons-upload" style="font-size:18px; width:18px; height:18px;"></span> <span class="rr-btn-text"><?php esc_html_e( 'Import', 'romeo-redirect-manager' ); ?></span>
                     </button>

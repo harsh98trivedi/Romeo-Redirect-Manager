@@ -154,6 +154,7 @@ For questions, feature requests, or customizations:
 
 If you find this plugin helpful, please consider:
 - ⭐ Starring this repository
+- 📝 [Leaving a 5-star review on WordPress.org](https://wordpress.org/support/plugin/romeo-redirect-manager/reviews/#new-post)
 - 📣 Sharing it with others
 - 🐛 Reporting bugs or suggesting features
 
