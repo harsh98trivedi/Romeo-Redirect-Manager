@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.2.1 - 2026-01-30
+### 🎨 Major UX/UI Refinements & Features
+
+This release focuses on usability, sorting visibility, and "Quality of Life" improvements requested by power users.
+
+#### ✨ New Features
+- **Drag-to-Select**: Select multiple redirects instantly by clicking and dragging across the grid.
+- **Copy Actions**: Added one-click copy buttons for both Source Slugs and Target URLs on every card.
+- **Improved 404 Settings**:
+  - Replaced search input with a clear dropdown for Page selection.
+  - Added strict cleanup logic to prevent conflicting redirect rules.
+  - "To Homepage" is now the default clear option.
+
+#### 🛠 Improvements
+- **Grid Layout**: Switched from Masonry (Column-fill) to a standard **Left-to-Right Grid**. This significantly improves readability of sorted items.
+- **Rebranding**: Simplified plugin name in admin menu to "**Redirects**" for a cleaner, native feel.
+
 ## 1.1.1 - 2025-12-28
 ### 🚀 Major Feature: Import/Export & Power User Tools
 

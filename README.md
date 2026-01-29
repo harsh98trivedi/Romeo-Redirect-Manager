@@ -5,7 +5,7 @@
 [![WordPress](https://img.shields.io/badge/WordPress-5.6+-blue.svg)](https://wordpress.org/)
 [![PHP](https://img.shields.io/badge/PHP-7.4+-purple.svg)](https://php.net/)
 [![License](https://img.shields.io/badge/License-GPL--2.0+-green.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
-[![Version](https://img.shields.io/badge/Version-1.1.1-orange.svg)](https://github.com/harsh98trivedi/Redirection-Romeo)
+[![Version](https://img.shields.io/badge/Version-1.2.1-orange.svg)](https://github.com/harsh98trivedi/Redirection-Romeo)
 
 **Romeo Redirect Manager** is a modern, lightweight WordPress plugin designed to make redirect management effortless and beautiful. Say goodbye to clunky tables and outdated interfaces — welcome to a sleek, card-based dashboard that supports the latest SEO standards, including **308 Permanent Redirects**.
 
@@ -19,6 +19,8 @@
 | 🔗 **Full Standard Support** | Supports **301**, **302**, **307**, and **308** status codes |
 | 🔍 **Instant Search** | Real-time, optimistic search filtering to find redirects instantly |
 | 📝 **Internal Linking** | Intelligent autocomplete for Posts and Pages |
+| 🖱️ **Drag-to-Select** | Bulk select cards by simply clicking and dragging |
+| 📋 **Quick Copy** | One-click copy buttons for Source and Target URLs |
 | ⚡ **Performance Focused** | Lightweight native JavaScript with zero heavy dependencies |
 | 📊 **Hit Counting** | Track redirect popularity with built-in hit counters |
 
@@ -38,15 +40,40 @@
 |-------------------|---|
 | ![Mobile Responsive](assets/images/screenshot-5.jpg) | |
 
+| Drag-to-Select | 404 Management |
+|----------------|----------------|
+| ![Drag Selection](assets/images/screenshot-6.png) | ![404 Settings](assets/images/screenshot-7.png) |
+
+---
+
+## ⚡ Power Features
+
+### 🖱️ Drag-to-Select (Bulk Management)
+Managing hundreds of redirects is now faster than ever. Instead of clicking checkboxes one by one, you can **click and drag** across the grid to instantly select multiple cards.
+- **Smart Detection**: Text selection is automatically disabled while dragging for a smooth experience.
+- **Visual Feedback**: Selected cards highlight instantly, ready for bulk deletion.
+
+### 🛡️ Smart Slug Overriding
+Sometimes you need to redirect a URL that already exists as a page (e.g., redirecting your old `/contact` page to a new separate domain, even if the page still exists).
+- **Conflict Warning**: The plugin detects if a slug is already in use by a Post or Page and warns you.
+- **Override Mode**: Simply check the **"Override"** box to force the redirect to take precedence over the existing page.
+
+### 🚦 Advanced 404 Handling
+Don't let visitors hit a dead end. Configure exactly what happens when a 404 error occurs:
+1.  **To Homepage**: The simplest option. Instantly redirects all 404 traffic to your site's home page.
+2.  **External URL**: Send lost traffic to a specific external help center or partner link.
+3.  **Existing Page**: Select any page on your site (like a custom "Search" or "Sitemap" page) from a dropdown list to keep users engaged.
+    - *Auto-Cleanup*: Switching between these modes automatically cleans up unused database options to keep your site fast.
+
 ---
 
 ## 📦 Installation
 
 ### 📥 Download
 
-[![Download](https://img.shields.io/badge/Download-v1.1.1-brightgreen.svg)](https://github.com/harsh98trivedi/Redirection-Romeo/releases/download/1.1.1/romeo-redirect-manager.zip)
+[![Download](https://img.shields.io/badge/Download-v1.2.1-brightgreen.svg)](https://github.com/harsh98trivedi/Redirection-Romeo/releases/download/1.2.1/romeo-redirect-manager.zip)
 
-👉 [**Click here to Download**](https://github.com/harsh98trivedi/Redirection-Romeo/releases/download/1.1.1/romeo-redirect-manager.zip)
+👉 [**Click here to Download**](https://github.com/harsh98trivedi/Redirection-Romeo/releases/download/1.2.1/romeo-redirect-manager.zip)
 
 ### From WordPress Admin
 1. Download the latest release `.zip` file from the link above

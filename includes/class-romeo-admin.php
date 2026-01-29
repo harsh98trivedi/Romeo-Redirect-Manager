@@ -19,34 +19,49 @@ class Romerema_Admin {
         add_action( 'wp_ajax_romerema_search_posts', array( $this, 'ajax_search_posts' ) );
         add_action( 'wp_ajax_romerema_export_redirects', array( $this, 'ajax_export_redirects' ) );
         add_action( 'wp_ajax_romerema_import_redirects', array( $this, 'ajax_import_redirects' ) );
+        add_action( 'wp_ajax_romerema_check_conflict', array( $this, 'ajax_check_conflict' ) );
+        add_action( 'wp_ajax_romerema_save_404', array( $this, 'ajax_save_404' ) );
+        add_action( 'wp_ajax_romerema_toggle_override', array( $this, 'ajax_toggle_override' ) );
     }
 
     public function add_admin_menu() {
         add_menu_page(
-            __( 'Romeo Redirect Manager', 'romeo-redirect-manager' ),
-            __( 'Romeo Redirects', 'romeo-redirect-manager' ),
+            __( 'Redirects', 'romeo-redirect-manager' ),
+            __( 'Redirects', 'romeo-redirect-manager' ),
             'manage_options',
             'romeo-redirect-manager',
             array( $this, 'render_admin_page' ),
             'dashicons-randomize',
             80
         );
+
+        add_submenu_page(
+            'romeo-redirect-manager',
+            __( '404 Settings', 'romeo-redirect-manager' ),
+            __( '404 Settings', 'romeo-redirect-manager' ),
+            'manage_options',
+            'romeo-redirect-manager-404',
+            array( $this, 'render_404_page' )
+        );
     }
 
     public function enqueue_assets( $hook ) {
-        if ( 'toplevel_page_romeo-redirect-manager' !== $hook ) {
+        // Allow main page and 404 page (check for plugin slug in hook)
+        if ( strpos( $hook, 'romeo-redirect-manager' ) === false ) {
             return;
         }
 
         $main_file = dirname( __FILE__ ) . '/../romeo-redirect-manager.php';
-        wp_enqueue_style( 'romeo-admin-css', plugins_url( 'assets/css/admin.css', $main_file ), array(), '1.1.2' );
-        wp_enqueue_script( 'romeo-admin-js', plugins_url( 'assets/js/admin.js', $main_file ), array(), '1.1.2', true );
+        wp_enqueue_style( 'romeo-admin-css', plugins_url( 'assets/css/admin.css', $main_file ), array(), '1.2.1' );
+        wp_enqueue_script( 'romeo-admin-js', plugins_url( 'assets/js/admin.js', $main_file ), array(), '1.2.1', true );
 
         wp_localize_script( 'romeo-admin-js', 'romerema_vars', array(
             'nonce' => wp_create_nonce( 'romerema_save_nonce' ),
             'delete_nonce' => wp_create_nonce( 'romerema_delete_nonce' ),
             'import_nonce' => wp_create_nonce( 'romerema_import_nonce' ),
-            'export_nonce' => wp_create_nonce( 'romerema_export_nonce' )
+            'export_nonce' => wp_create_nonce( 'romerema_export_nonce' ),
+            'check_nonce'  => wp_create_nonce( 'romerema_check_nonce' ),
+            'save_404_nonce' => wp_create_nonce( 'romerema_save_404_nonce' )
         ));
     }
 
@@ -61,10 +76,10 @@ class Romerema_Admin {
             <div class="rr-header">
                 <div class="rr-brand">
                     <div class="rr-logo-icon">
-                        <img src="<?php echo esc_url( $logo_url ); ?>" alt="Redirection Romeo">
+                        <img src="<?php echo esc_url( $logo_url ); ?>" alt="Redirects">
                     </div>
                     <div>
-                        <h1>Romeo Redirect Manager</h1>
+                        <h1>Redirects</h1>
                         <small>by <a href="https://harsh98trivedi.github.io/" target="_blank" style="color:#f0405f; text-decoration:none; font-weight:600;">Harsh Trivedi</a></small>
                     </div>
                 </div>
@@ -106,6 +121,22 @@ class Romerema_Admin {
                                 <option value="post"><?php esc_html_e( 'Internal Post / Page', 'romeo-redirect-manager' ); ?></option>
                             </select>
                         </div>
+                    </div>
+
+                    <!-- Conflict Warning & Override (Moved Below) -->
+                    <div id="rr-conflict-warning" class="rr-warning hidden">
+                        <div class="rr-warning-content">
+                            <span class="dashicons dashicons-warning"></span> 
+                            <span class="rr-warning-text">
+                                <?php esc_html_e( 'Warning: A page with this slug already exists.', 'romeo-redirect-manager' ); ?>
+                                <a href="#" id="rr-conflict-link" target="_blank"><?php esc_html_e( 'View Page', 'romeo-redirect-manager' ); ?> &rarr;</a>
+                            </span>
+                        </div>
+                        <label class="rr-checkbox-wrapper rr-override-wrapper" style="cursor:pointer; display:inline-flex; align-items:center; gap:8px; margin-top:12px; position:relative; padding:8px 14px; background:#fff7ed; border:1px solid #fed7aa; border-radius:8px; transition:all 0.2s ease;">
+                            <input type="checkbox" name="override" id="rr-override-check" value="1" class="rr-custom-checkbox" style="opacity:0; position:absolute; inset:0; width:100%; height:100%; margin:0; z-index:10; cursor:pointer;">
+                            <span class="rr-checkbox-box" style="width:18px; height:18px; border-radius:5px; border:2.5px solid #fb923c; display:flex; align-items:center; justify-content:center; background:white; flex-shrink:0; transition:all 0.2s ease;"></span>
+                            <span class="rr-override-label" style="font-weight:600; color:#ea580c; font-size:13px; letter-spacing:-0.01em;">Override</span>
+                        </label>
                     </div>
 
                     <div class="rr-form-row">
@@ -191,11 +222,29 @@ class Romerema_Admin {
                         ?>
                             <div class="rr-card" id="card-<?php echo esc_attr( $r['id'] ); ?>" data-slug="<?php echo esc_attr( strtolower($r['slug'] ) ); ?>" data-target="<?php echo esc_attr( strtolower( $target_display ) ); ?>">
                                 
+                                <?php 
+                                    $is_override = isset($r['override']) && ( $r['override'] === true || $r['override'] === '1' || $r['override'] === 'true' );
+                                    
+                                    // Conflict Check
+                                    $conflict_args = array(
+                                        'name'        => $r['slug'],
+                                        'post_type'   => array( 'post', 'page' ),
+                                        'post_status' => 'publish',
+                                        'numberposts' => 1
+                                    );
+                                    $conflicts = get_posts($conflict_args);
+                                    $has_conflict = !empty($conflicts);
+                                ?>
+                                
                                 <div class="rr-card-actions">
                                     <label class="rr-checkbox-wrapper">
                                         <input type="checkbox" class="rr-bulk-checkbox" value="<?php echo esc_attr( $r['id'] ); ?>">
                                         <span class="rr-checkbox-style"></span>
                                     </label>
+
+                                    <div style="margin-right:auto;"></div>
+                                    
+
                                     
                                     <a href="<?php echo esc_url( $full_source ); ?>" target="_blank" class="rr-action-btn" title="Open Link">
                                         <span class="dashicons dashicons-external"></span>
@@ -208,6 +257,7 @@ class Romerema_Admin {
                                         data-type="<?php echo esc_attr( $r['type'] ); ?>"
                                         data-target="<?php echo esc_attr( $r['target'] ); ?>"
                                         data-code="<?php echo esc_attr( $r['code'] ); ?>"
+                                        data-override="<?php echo isset($r['override']) && $r['override'] ? '1' : '0'; ?>"
                                         <?php if( 'post' === $r['type'] && isset($data_attr['target_title']) ) : ?>
                                         data-target-title="<?php echo esc_attr( $data_attr['target_title'] ); ?>"
                                         <?php endif; ?>
@@ -221,23 +271,50 @@ class Romerema_Admin {
 
                                 <div class="rr-card-slug" title="<?php echo esc_attr( $r['slug'] ); ?>">
                                     <span class="slash">/</span><?php echo esc_html( $r['slug'] ); ?>
+                                    <button class="rr-copy-btn" data-copy="<?php echo esc_url( $full_source ); ?>" title="<?php esc_attr_e('Copy Source URL', 'romeo-redirect-manager'); ?>">
+                                        <span class="dashicons dashicons-admin-page"></span>
+                                    </button>
                                 </div>
 
                                 <div class="rr-card-info">
                                     <span class="rr-info-label"><?php echo esc_html( $target_label ); ?></span>
-                                    <span class="rr-info-value" title="<?php echo esc_attr( $full_target ); ?>">
-                                        <?php echo esc_html( $target_display ); ?>
-                                    </span>
+                                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:4px;">
+                                        <span class="rr-info-value" title="<?php echo esc_attr( $full_target ); ?>">
+                                            <?php echo esc_html( $target_display ); ?>
+                                        </span>
+                                        <button class="rr-copy-btn" data-copy="<?php echo esc_url( $full_target ); ?>" title="<?php esc_attr_e('Copy Target URL', 'romeo-redirect-manager'); ?>">
+                                            <span class="dashicons dashicons-admin-page"></span>
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <div class="rr-card-footer">
-                                    <div class="rr-status">
-                                        <div class="rr-status-dot code-<?php echo esc_attr( $r['code'] ); ?>"></div>
-                                        <?php echo esc_attr( $r['code'] ); ?> Redirect
+                                <div class="rr-card-footer" style="padding: 0 24px 18px 24px;">
+                                    <!-- Status and Hits Row -->
+                                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px;">
+                                        <!-- Status -->
+                                        <div class="rr-status-block" style="display: flex; align-items: center; gap: 8px;">
+                                            <div class="rr-status-dot code-<?php echo esc_attr( $r['code'] ); ?>" style="width: 6px; height: 6px; flex-shrink: 0;"></div>
+                                            <span style="font-weight: 600; color: #475569; font-size: 13px;">
+                                                <?php echo esc_attr( $r['code'] ); ?> Redirect
+                                            </span>
+                                        </div>
+
+                                        <!-- Hits -->
+                                        <div class="rr-hits-badge" style="display: flex; align-items: center; gap: 4px;">
+                                            <span style="font-size: 14px; font-weight: 700; color: #0f172a; line-height: 1;">
+                                                <?php echo isset($r['hits']) ? esc_html( number_format_i18n( $r['hits'] ) ) : '0'; ?>
+                                            </span>
+                                            <span style="font-size: 10px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">HITS</span>
+                                        </div>
                                     </div>
-                                    <div class="rr-hits">
-                                        <?php echo isset($r['hits']) ? esc_html( number_format_i18n( $r['hits'] ) ) . ' Hits' : '0 Hits'; ?>
-                                    </div>
+                                    
+                                    <!-- Override Indicator -->
+                                    <?php if( $has_conflict && $is_override ) : ?>
+                                        <div class="rr-override-indicator" style="display: inline-flex; align-items: center; gap: 8px;">
+                                            <div style="width: 6px; height: 6px; border-radius: 50%; background: #f97316; flex-shrink: 0;"></div>
+                                            <span style="font-size: 13px; font-weight: 600; color: #ea580c;">Overridden</span>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
 
                             </div>
@@ -284,6 +361,93 @@ class Romerema_Admin {
         <?php
     }
 
+    public function render_404_page() {
+        $option_404_target = get_option( 'romeo_redirect_404_target', '' );
+        $option_404_type = get_option( 'romeo_redirect_404_type', 'url' );
+        $option_404_post_id = get_option( 'romeo_redirect_404_post_id', 0 );
+        
+        $post_title = '';
+        if ( $option_404_post_id ) {
+            $post_title = get_the_title( $option_404_post_id );
+            if ( ! $post_title ) {
+                $post_title = 'Deleted Post #' . $option_404_post_id;
+            }
+        }
+        ?>
+        <div class="rr-wrapper">
+             <div class="rr-header">
+                <div>
+                    <h1><?php esc_html_e( '404 Settings', 'romeo-redirect-manager' ); ?></h1>
+                    <small><?php esc_html_e( 'Manage how 404 errors are handled.', 'romeo-redirect-manager' ); ?></small>
+                </div>
+            </div>
+
+            <div class="rr-creator rr-404-container">
+                <h3><?php esc_html_e( 'Default 404 Redirect', 'romeo-redirect-manager' ); ?></h3>
+                <p class="rr-404-description">
+                    <?php esc_html_e( 'You can choose to redirect all 404 (Not Found) errors to a specific specific URL, such as your homepage or a custom search page. If left empty, the default 404 behavior will be used.', 'romeo-redirect-manager' ); ?>
+                </p>
+                
+                <form id="rr-404-form">
+                    
+                    <div class="rr-segmented-control">
+                        <div class="rr-segment-btn <?php echo ($option_404_type === 'home') ? 'active' : ''; ?>" data-value="home">
+                            <span class="dashicons dashicons-admin-home"></span> <?php esc_html_e( 'To Homepage', 'romeo-redirect-manager' ); ?>
+                        </div>
+                        <div class="rr-segment-btn <?php echo ($option_404_type === 'url') ? 'active' : ''; ?>" data-value="url">
+                            <span class="dashicons dashicons-admin-site"></span> <?php esc_html_e( 'External URL', 'romeo-redirect-manager' ); ?>
+                        </div>
+                        <div class="rr-segment-btn <?php echo ($option_404_type === 'post') ? 'active' : ''; ?>" data-value="post">
+                            <span class="dashicons dashicons-admin-post"></span> <?php esc_html_e( 'Existing Page', 'romeo-redirect-manager' ); ?>
+                        </div>
+                        <input type="hidden" name="type" id="rr-input-type" value="<?php echo esc_attr( $option_404_type ); ?>">
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="rr-404-input-wrapper">
+                        
+                        <div id="rr-view-home" class="<?php echo ($option_404_type !== 'home') ? 'hidden' : ''; ?>">
+                            <label class="rr-form-label"><?php esc_html_e( 'Homepage URL', 'romeo-redirect-manager' ); ?></label>
+                            <input class="rr-input" type="text" disabled value="<?php echo esc_url( home_url('/') ); ?>" style="background: #f8fafc; color: #94a3b8;">
+                            <p class="rr-form-help"><?php esc_html_e( 'Redirects all 404 traffic to your homepage.', 'romeo-redirect-manager' ); ?></p>
+                        </div>
+
+                        <!-- URL View -->
+                        <div id="rr-view-url" class="<?php echo ($option_404_type !== 'url') ? 'hidden' : ''; ?>">
+                            <label class="rr-form-label"><?php esc_html_e( 'Destination URL', 'romeo-redirect-manager' ); ?></label>
+                            <input class="rr-input" type="url" name="url_404" placeholder="https://example.com/custom-404-page" value="<?php echo esc_attr( $option_404_target ); ?>">
+                             <p class="rr-form-help"><?php esc_html_e( 'Redirects all 404 traffic to this external URL.', 'romeo-redirect-manager' ); ?></p>
+                        </div>
+
+                        <!-- Post View -->
+                        <div id="rr-view-post" class="<?php echo ($option_404_type !== 'post') ? 'hidden' : ''; ?>" style="position:relative;">
+                            
+                            <select name="target_post_id" class="rr-input">
+                                <option value="0"><?php esc_html_e( 'Select a page...', 'romeo-redirect-manager' ); ?></option>
+                                <?php 
+                                $pages = get_pages(); 
+                                foreach ( $pages as $page ) {
+                                    $selected = ( intval($option_404_post_id) === $page->ID ) ? 'selected' : '';
+                                    echo '<option value="' . esc_attr( $page->ID ) . '" ' . $selected . '>' . esc_html( $page->post_title ) . '</option>';
+                                }
+                                ?>
+                            </select>
+                             <p class="rr-form-help"><?php esc_html_e( 'Redirects all 404 traffic to this internal page.', 'romeo-redirect-manager' ); ?></p>
+                        </div>
+
+                    </div>
+                    
+                    <p class="rr-form-help main-help"><?php esc_html_e( 'Leave all fields empty to disable the 404 redirect behavior.', 'romeo-redirect-manager' ); ?></p>
+
+                    <div class="rr-form-actions">
+                         <button type="submit" id="rr-save-404-btn" class="rr-btn rr-btn-save"><?php esc_html_e( 'Save 404 Settings', 'romeo-redirect-manager' ); ?></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <?php
+    }
+
     public function ajax_save_redirect() {
         check_ajax_referer( 'romerema_save_nonce', 'nonce' );
 
@@ -295,6 +459,7 @@ class Romerema_Admin {
         $slug = isset( $_POST['slug'] ) ? sanitize_title( wp_unslash( $_POST['slug'] ) ) : '';
         $type = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : 'url';
         $code = isset( $_POST['code'] ) ? intval( wp_unslash( $_POST['code'] ) ) : 301;
+        $override = isset( $_POST['override'] ) && $_POST['override'] === 'true';
         
         if ( empty( $slug ) ) {
             wp_send_json_error( 'Slug is required.' );
@@ -331,6 +496,7 @@ class Romerema_Admin {
                     $r['type']   = $type;
                     $r['target'] = $target;
                     $r['code']   = $code;
+                    $r['override'] = $override;
                     $updated = true;
                     break;
                 }
@@ -345,6 +511,7 @@ class Romerema_Admin {
                     'type'   => $type,
                     'target' => $target,
                     'code'   => $code,
+                    'override' => $override,
                     'hits'   => 0
                 );
             }
@@ -357,6 +524,7 @@ class Romerema_Admin {
                 'type'   => $type,
                 'target' => $target,
                 'code'   => $code,
+                'override' => $override,
                 'hits'   => 0
             );
         }
@@ -537,5 +705,101 @@ class Romerema_Admin {
 
         update_option( $this->option_key, $redirects );
         wp_send_json_success( count( $valid_items ) );
+    }
+
+    public function ajax_check_conflict() {
+        check_ajax_referer( 'romerema_check_nonce', 'nonce' );
+        if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error();
+
+        $slug = isset( $_POST['slug'] ) ? sanitize_title( wp_unslash( $_POST['slug'] ) ) : '';
+        
+        if ( empty( $slug ) ) wp_send_json_success( array( 'exists' => false ) );
+
+        // Check if slug exists as a page or post
+        // Using get_page_by_path is appropriate for hierarchical pages and flattened logic
+        // But for generic posts, we might also want to query.
+        // However, most redirects conflict with Pages.
+        // Let's use a dual check.
+        
+        $exists = false;
+        $url = '';
+        
+        // 1. Check Page by path
+        $page = get_page_by_path( $slug );
+        if ( $page ) {
+            $exists = true;
+            $url = get_permalink( $page->ID );
+        } 
+        
+        // 2. Fallback: simple WP_Query for post_name (slug) - covers posts
+        if ( ! $exists ) {
+            $args = array(
+                'name'        => $slug,
+                'post_type'   => 'any',
+                'post_status' => 'publish',
+                'numberposts' => 1
+            );
+            $posts = get_posts($args);
+            if($posts) {
+                $exists = true;
+                $url = get_permalink( $posts[0]->ID );
+            }
+        }
+
+        wp_send_json_success( array( 'exists' => $exists, 'url' => $url ) );
+    }
+
+    public function ajax_save_404() {
+        check_ajax_referer( 'romerema_save_404_nonce', 'nonce' );
+        if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error();
+
+        $type = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : 'url';
+        
+        // Initialize defaults
+        $url = '';
+        $post_id = 0;
+
+        // Only populate relevant fields based on type
+        if ( 'url' === $type ) {
+            $url = isset( $_POST['url_404'] ) ? esc_url_raw( wp_unslash( $_POST['url_404'] ) ) : '';
+        } elseif ( 'post' === $type ) {
+            $post_id = isset( $_POST['target_post_id'] ) ? intval( wp_unslash( $_POST['target_post_id'] ) ) : 0;
+        } 
+        // If 'home', both remain default (empty/0)
+
+        update_option( 'romeo_redirect_404_target', $url );
+        update_option( 'romeo_redirect_404_type', $type );
+        update_option( 'romeo_redirect_404_post_id', $post_id );
+        
+        wp_send_json_success();
+    }
+    public function ajax_toggle_override() {
+        check_ajax_referer( 'romerema_save_nonce', 'nonce' );
+
+        $id = isset( $_POST['id'] ) ? sanitize_text_field( $_POST['id'] ) : '';
+        $state = isset( $_POST['state'] ) ? sanitize_text_field( $_POST['state'] ) : 'false';
+        $override_val = ( $state === 'true' );
+
+        if ( ! $id ) {
+            wp_send_json_error( array( 'message' => 'Invalid ID' ) );
+        }
+
+        $redirects = get_option( $this->option_key, array() );
+        $found = false;
+
+        foreach ( $redirects as $key => $r ) {
+            if ( $r['id'] === $id ) {
+                $redirects[$key]['override'] = $override_val;
+                $found = true;
+                break;
+            }
+        }
+
+        if ( $found ) {
+            update_option( $this->option_key, $redirects );
+            wp_send_json_success();
+        } else {
+            wp_send_json_error( array( 'message' => 'Redirect not found' ) );
+        }
     }
 }

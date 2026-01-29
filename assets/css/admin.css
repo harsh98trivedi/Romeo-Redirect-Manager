@@ -13,6 +13,10 @@
     --rr-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
+.hidden {
+    display: none !important;
+}
+
 .rr-wrapper {
     font-family: 'Poppins', sans-serif;
     width: 98%;
@@ -237,12 +241,16 @@ input.rr-input {
     line-height: 1;
 }
 
-/* Grid */
+/* Masonry Grid */
+/* Grid Layout (Left-to-Right) */
 .rr-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 24px;
+    width: 100%;
 }
+
+
 
 /* Cards */
 .rr-card {
@@ -470,6 +478,37 @@ input.rr-input {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
+}
+
+select.rr-input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 18px;
+    padding-right: 48px !important;
+    padding-left: 16px; 
+    cursor: pointer;
+    background-color: #ffffff;
+    border: 1px solid #f1f5f9; /* Very subtle border */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02); /* Premium soft shadow */
+    color: #1e293b;
+    font-weight: 500;
+    height: 48px; /* Taller, premium feel */
+    border-radius: 12px; /* Smooth */
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+select.rr-input:hover {
+    border-color: #e2e8f0;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+}
+
+select.rr-input:focus {
+    border-color: #fb923c;
+    box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.1), 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+    transform: translateY(-1px);
+    outline: none;
 }
 
 .rr-input-group .rr-input {
@@ -975,16 +1014,14 @@ input.rr-input {
     justify-content: center;
     margin-right: 4px;
     
-    /* Always show on desktop */
-    opacity: 1;
-    pointer-events: auto;
+    /* Hide by default, show on hover or is-selected */
+    opacity: 0;
     transition: opacity 0.2s;
 }
 
-/* Show on card hover (desktop) - Redundant but kept for safety or if logic changes */
-.rr-card:hover .rr-checkbox-wrapper {
+.rr-card:hover .rr-checkbox-wrapper,
+.rr-card.is-selected .rr-checkbox-wrapper {
     opacity: 1;
-    pointer-events: auto;
 }
 
 /* If checkbox is checked, ALWAYS show it */
@@ -1013,10 +1050,9 @@ input.rr-input {
 .rr-checkbox-style {
     width: 40px; 
     height: 40px;
-    border: 2px solid #e2e8f0; /* Subtle border for checkbox feel */
-    border-radius: 12px; /* Smooth corners */
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
     background: white;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1046,21 +1082,19 @@ input.rr-input {
     opacity: 1;
 }
 
-/* Define Action Buttons Explicitly to Match */
 .rr-action-btn {
     width: 40px;
     height: 40px;
     border-radius: 12px;
     background: white;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid transparent; /* or #f1f5f9? */
+    border: 1px solid transparent;
     cursor: pointer;
     transition: all 0.2s;
     color: #64748b;
-    opacity: 1 !important; /* Force Visible Always */
+    opacity: 1 !important;
     text-decoration: none;
 }
 .rr-action-btn:hover {
@@ -1273,6 +1307,9 @@ input.rr-input {
     order: 3;
     padding: 0 24px 24px 24px;
     margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 .rr-card-actions { /* Footer Actions row */
@@ -1439,5 +1476,340 @@ input.rr-input {
         background-color: #fff1f2 !important;
         border-color: var(--rr-primary) !important;
         border-width: 2px !important;
+    }
+}
+
+/* Conflict Warning Banner (Top of Card) */
+.rr-card-warning-top {
+    background-color: #fff7ed;
+    border-bottom: 1px solid #ffedd5;
+    padding: 8px 24px;
+    margin: -24px -24px 16px -24px; /* Pull into padding to touch edges */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #c2410c;
+    border-radius: 12px 12px 0 0; /* Only top corners rounded */
+}
+.rr-card-warning-top .text {
+    flex-grow: 1; /* Push toggle to right */
+}
+@media (max-width: 480px) {
+    .rr-card-warning-top {
+        margin: 0 0 12px 0;
+        border-radius: 12px 12px 0 0;
+        width: 100%;
+    }
+}
+
+/* Override Toggle Switch (Small) */
+.rr-override-container {
+    display: flex;
+    align-items: center;
+    margin-right: 8px;
+}
+/* Override Toggle (Checkbox Style) - Card View */
+/* Override styles handled by JS and inline styles for flat design */
+
+.rr-toggle-switch.loading {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Warning Box Design */
+.rr-warning {
+    background: #fff7ed;
+    border: 1px solid #ffedd5;
+    border-left: 4px solid #f97316 !important;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: row; /* Horizontal layout */
+    justify-content: flex-start; /* Stack naturally */
+    gap: 16px;
+    animation: fadeIn 0.3s;
+    flex-wrap: wrap; /* Allow wrapping */
+}
+
+.rr-warning-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-grow: 1; 
+    min-width: 0;
+} 
+
+.rr-warning-text {
+    white-space: normal; /* Allow wrapping */
+    overflow: visible;
+    color: #9a3412;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.rr-override-wrapper {
+    flex-shrink: 0;
+    margin-left: auto; /* Push to right on large screens, but wraps on small */
+}
+
+/* Mobile Tweak for Warning */
+@media (max-width: 480px) {
+    .rr-warning {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .rr-override-wrapper {
+        margin-left: 0;
+        padding-top: 4px;
+    }
+}
+
+.rr-warning #rr-conflict-link {
+    display: inline-block;
+    margin-left: 8px;
+    color: #c2410c;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+    border-bottom: 1px dashed #c2410c;
+}
+
+.rr-warning #rr-conflict-link:hover {
+    color: #7c2d12;
+    border-bottom-style: solid;
+}
+
+.rr-warning .dashicons {
+    color: #f97316;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.rr-warning .rr-checkbox-wrapper {
+    margin: 0;
+    width: auto;
+    height: auto;
+    opacity: 1;
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #7c2d12;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+    position: relative; /* Must override absolute */
+    top: auto;
+    left: auto;
+    right: auto;
+}
+
+/* Custom Small Checkbox for Warning */
+/* Custom Small Checkbox for Warning */
+.rr-checkbox-box {
+    width: 18px; /* Slightly smaller for elegance */
+    height: 18px;
+    border: 2px solid #fdba74;
+    border-radius: 5px;
+    background: white;
+    position: relative;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.rr-checkbox-box::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    background: #f97316;
+    border-radius: 2px;
+    transform: translate(-50%, -50%) scale(0);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.rr-custom-checkbox:checked + .rr-checkbox-box {
+    border-color: #f97316;
+    background: #fff7ed;
+}
+
+.rr-custom-checkbox:checked + .rr-checkbox-box::after {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+}
+
+.rr-override-wrapper:hover .rr-checkbox-box {
+    border-color: #f97316;
+}
+
+/* 404 Page Specifics - Premium Redesign */
+.rr-404-container {
+    max-width: 800px; /* Reduced from full width */
+    margin: 0;
+    padding: 40px; /* More breathing room */
+}
+
+.rr-404-container h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--rr-text-main);
+    margin-top: 0;
+    margin-bottom: 12px;
+}
+
+.rr-404-description {
+    color: #64748b;
+    font-size: 15px; /* Slightly larger reading text */
+    line-height: 1.6;
+    margin-bottom: 40px;
+    max-width: 650px; /* Optimal reading width */
+}
+
+.rr-404-container .rr-form-row {
+     display: grid;
+     grid-template-columns: 200px 1fr; /* Fixed label/select width, fluid input */
+     gap: 24px;
+     margin-bottom: 32px;
+     align-items: start;
+}
+
+/* Segmented Control for 404 */
+.rr-segmented-control {
+    display: flex;
+    width: fit-content;
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 99; /* Higher index */
+}
+
+.rr-segment-btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+    border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.rr-segment-btn:hover {
+    color: #334155;
+}
+
+.rr-segment-btn.active {
+    background: white;
+    color: var(--rr-primary);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border-color: #e2e8f0;
+    font-weight: 600;
+}
+
+.rr-404-input-wrapper {
+    min-height: 80px; /* Prevent layout jump */
+}
+
+.rr-404-container .rr-form-actions {
+    margin-top: 20px;
+    padding-top: 24px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: flex-end; 
+}
+/* Drag Selection Box */
+.rr-drag-box {
+    position: fixed;
+    background: rgba(251, 146, 60, 0.15);
+    border: 1px solid rgba(251, 146, 60, 0.5);
+    z-index: 10000;
+    pointer-events: none; /* Pass events through */
+    border-radius: 4px;
+    will-change: transform, width, height;
+}
+
+.rr-copy-btn {
+    background: none;
+    border: none;
+    color: #cbd5e1;
+    cursor: pointer;
+    margin-left: 8px;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    opacity: 0; 
+    flex-shrink: 0;
+}
+
+.rr-card:hover .rr-copy-btn {
+    opacity: 1;
+}
+
+.rr-copy-btn:hover {
+    color: var(--rr-primary);
+    background: #f1f5f9;
+}
+
+.rr-copy-btn .dashicons {
+    font-size: 16px; 
+    width: 16px; 
+    height: 16px;
+}
+.rr-form-help {
+    color: #64748b;
+    font-size: 13px;
+    margin-top: 8px;
+    margin-bottom: 0;
+    line-height: 1.5;
+}
+
+.rr-form-help.main-help {
+    margin-top: 24px;
+    margin-bottom: 24px;
+    padding-top: 20px;
+    border-top: 1px dashed #e2e8f0;
+}
+
+/* Mobile responsive for 404 */
+@media (max-width: 768px) {
+    .rr-404-container {
+        padding: 24px;
+        max-width: 100%;
+    }
+    
+    .rr-404-container .rr-form-row {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .rr-404-container .rr-form-actions {
+        flex-direction: column;
+    }
+    
+    .rr-404-container .rr-btn-save {
+        width: 100%;
+        justify-content: center;
     }
 }
