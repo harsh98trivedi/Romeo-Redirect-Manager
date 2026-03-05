@@ -4,7 +4,7 @@ Tags: redirection, redirect, 301, 308, seo
 Donate link: https://github.com/sponsors/harsh98trivedi
 Requires at least: 5.6
 Tested up to: 6.9
-Stable tag: 1.2.1
+Stable tag: 1.3.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -84,10 +84,18 @@ Yes. The "Target Type" selector allows you to choose "Internal Post" or "Interna
 3. **Bulk Actions** — Bulk delete redirects.
 4. **Import/Export** — Import and export redirects with ease.
 5. **Responsive** — Responsive design for all screen sizes.
-6. **Drag-to-Select** — Easily select multiple items by dragging across the grid.
+6. **Override Mode** —  Force the redirect to take precedence over the existing page.
 7. **404 Management** — Configure 404 redirects to Homepage, URL, or Pages.
 
 == Changelog ==
+
+= 1.3.1 - 2026-03-05 =
+* **UX:** Complete overhaul with "App-Grade" custom select components.
+* **UX:** Unified input fields and prefix boxes for a professional cohesive look.
+* **Branding:** Modernized all action buttons and segmented controls to dark theme (#151515).
+* **Mobile:** Fixed auto-zoom on inputs and improved touch targets.
+* **Icons:** Refined hover states for Edit, Copy, and Open actions (Dark theme).
+* **Bugfix:** Resolved alignment and spacing issues in card layouts.
 
 = 1.2.1 - 2026-01-30 =
 * **Feature:** Added Drag-to-Select functionality for bulk actions.
@@ -119,5 +127,5 @@ Yes. The "Target Type" selector allows you to choose "Internal Post" or "Interna
 
 == Upgrade Notice ==
 
-= 1.2.1 =
-Major UX improvements including Drag-Select, Copy buttons, and Grid layout.
+= 1.3.1 =
+Major Premium UX/UI overhaul including custom dropdowns and unified professional fields.

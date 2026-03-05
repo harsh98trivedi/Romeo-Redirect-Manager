@@ -1,6 +1,97 @@
 document.addEventListener('DOMContentLoaded', () => {
     
-    // DOM Elements
+    // Core custom select functionality
+    function initCustomSelects() {
+        const selects = document.querySelectorAll('select.rr-select:not(.rr-select-native), select.rr-input:not(.rr-select-native)');
+        
+        selects.forEach(select => {
+            if (select.closest('.rr-select-custom')) return; // Already initialized
+
+            // Wrap and hide native select
+            const wrapper = document.createElement('div');
+            wrapper.className = 'rr-select-custom';
+            select.parentNode.insertBefore(wrapper, select);
+            wrapper.appendChild(select);
+            select.classList.add('rr-select-native');
+
+            // Create trigger
+            const trigger = document.createElement('div');
+            trigger.className = 'rr-select-trigger';
+            const initialText = select.options[select.selectedIndex]?.text || 'Select...';
+            trigger.innerHTML = `<span class="rr-selected-text">${initialText}</span><span class="dashicons dashicons-arrow-down-alt2"></span>`;
+            wrapper.appendChild(trigger);
+
+            // Create dropdown menu
+            const menu = document.createElement('div');
+            menu.className = 'rr-select-dropdown';
+            Array.from(select.options).forEach((option, idx) => {
+                const optDiv = document.createElement('div');
+                optDiv.className = 'rr-select-option' + (select.selectedIndex === idx ? ' selected' : '');
+                optDiv.textContent = option.text;
+                optDiv.dataset.value = option.value;
+                optDiv.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    select.value = option.value;
+                    trigger.querySelector('.rr-selected-text').textContent = option.text;
+                    menu.classList.remove('show');
+                    trigger.classList.remove('active');
+                    
+                    // Highlight selected
+                    menu.querySelectorAll('.rr-select-option').forEach(o => o.classList.remove('selected'));
+                    optDiv.classList.add('selected');
+                    
+                    // Dispatch change event to native select
+                    select.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+                menu.appendChild(optDiv);
+            });
+            wrapper.appendChild(menu);
+
+            // Toggle logic
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                
+                // Close all other dropdowns
+                document.querySelectorAll('.rr-select-dropdown.show').forEach(openMenu => {
+                    if (openMenu !== menu) {
+                        openMenu.classList.remove('show');
+                        openMenu.previousSibling.classList.remove('active');
+                    }
+                });
+
+                menu.classList.toggle('show');
+                trigger.classList.toggle('active');
+            });
+        });
+    }
+
+    // Global click listener to close dropdowns
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.rr-select-dropdown.show').forEach(menu => {
+            menu.classList.remove('show');
+            menu.previousSibling.classList.remove('active');
+        });
+    });
+
+    function syncCustomSelects() {
+        document.querySelectorAll('.rr-select-custom').forEach(wrapper => {
+            const select = wrapper.querySelector('select');
+            const triggerText = wrapper.querySelector('.rr-selected-text');
+            const options = wrapper.querySelectorAll('.rr-select-option');
+            
+            if (select && triggerText) {
+                const selectedOption = select.options[select.selectedIndex];
+                triggerText.textContent = selectedOption ? selectedOption.text : 'Select...';
+                
+                options.forEach(opt => {
+                    opt.classList.toggle('selected', opt.dataset.value === select.value);
+                });
+            }
+        });
+    }
+
+    initCustomSelects();
+    
     const dom = {
         btnNew: document.getElementById('rr-btn-new'),
         panel: document.getElementById('rr-creator-panel'),
@@ -11,9 +102,6 @@ document.addEventListener('DOMContentLoaded', () => {
         groupPost: document.getElementById('rr-group-post'),
         postSearchInput: document.getElementById('rr-post-search-input'),
         searchResults: document.getElementById('rr-search-results'),
-        targetPostId: document.getElementById('rr-target-post-id'),
-        selectedPost: document.getElementById('rr-selected-post'),
-        modalTitle: document.getElementById('rr-modal-title'),
         targetPostId: document.getElementById('rr-target-post-id'),
         selectedPost: document.getElementById('rr-selected-post'),
         modalTitle: document.getElementById('rr-modal-title'),
@@ -64,6 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.overrideCheck.checked = false;
             updateOverrideCheckboxState(dom.overrideCheck);
         }
+        syncCustomSelects();
     }
 
     // Toggle Types
@@ -104,7 +193,8 @@ document.addEventListener('DOMContentLoaded', () => {
             Array.from(cards).forEach(card => {
                 const slug = (card.getAttribute('data-slug') || '').toLowerCase();
                 const target = (card.getAttribute('data-target') || '').toLowerCase();
-                const combined = slug + ' ' + target;
+                const code = (card.getAttribute('data-code') || '').toLowerCase();
+                const combined = slug + ' ' + target + ' ' + code;
                 
                 // Check if ALL terms are present in the combined string (AND logic)
                 const match = terms.every(term => combined.includes(term));
@@ -124,8 +214,144 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 noResultsMsg.classList.add('hidden');
             }
+            updateReportSummary();
         });
     }
+
+    // Filters and View Toggles
+    const filterBtns = document.querySelectorAll('.rr-filter-btn');
+    const viewBtns = document.querySelectorAll('.rr-view-btn');
+    const reportSummary = document.getElementById('rr-report-summary');
+    let currentFilter = 'all';
+
+    function updateReportSummary() {
+        if (!reportSummary) return;
+        const cards = document.querySelectorAll('.rr-card');
+        let total = 0, counts = { '301': 0, '302': 0, '307': 0, '308': 0 };
+        cards.forEach(card => {
+            if (card.style.display !== 'none') {
+                total++;
+                const code = card.getAttribute('data-code');
+                if (counts[code] !== undefined) counts[code]++;
+            }
+        });
+        
+        reportSummary.innerHTML = `Showing <strong>${total}</strong> redirects ` + 
+            `<span class="rr-summary-chips">` +
+            `<span class="rr-summary-chip" data-filter="301" style="--chip-color: #3b82f6;">301: <strong>${counts['301']}</strong></span>` +
+            `<span class="rr-summary-chip" data-filter="302" style="--chip-color: #f59e0b;">302: <strong>${counts['302']}</strong></span>` +
+            `<span class="rr-summary-chip" data-filter="307" style="--chip-color: #8b5cf6;">307: <strong>${counts['307']}</strong></span>` +
+            `<span class="rr-summary-chip" data-filter="308" style="--chip-color: #ec4899;">308: <strong>${counts['308']}</strong></span>` +
+            `</span>`;
+    }
+
+    // Interactive chips click to filter
+    if (reportSummary) {
+        reportSummary.addEventListener('click', (e) => {
+            const chip = e.target.closest('.rr-summary-chip');
+            if (chip) {
+                const filterValue = chip.getAttribute('data-filter');
+                const targetBtn = document.querySelector(`.rr-filter-btn[data-filter="${filterValue}"]`);
+                if (targetBtn) targetBtn.click();
+            }
+        });
+    }
+
+    if (filterBtns.length > 0) {
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.getAttribute('data-filter');
+                filterCards();
+            });
+        });
+    }
+
+    function filterCards() {
+        const cards = document.querySelectorAll('.rr-card');
+        const searchInput = document.getElementById('rr-card-search');
+        let terms = [];
+        if (searchInput && searchInput.value) {
+            terms = searchInput.value.toLowerCase().split(' ').filter(t => t.length > 0);
+        }
+
+        let visibleCount = 0;
+        cards.forEach(card => {
+            let showByFilter = (currentFilter === 'all' || card.getAttribute('data-code') === currentFilter);
+            let showBySearch = true;
+
+            if (terms.length > 0) {
+                const slug = (card.getAttribute('data-slug') || '').toLowerCase();
+                const target = (card.getAttribute('data-target') || '').toLowerCase();
+                const code = (card.getAttribute('data-code') || '').toLowerCase();
+                const combined = slug + ' ' + target + ' ' + code;
+                showBySearch = terms.every(term => combined.includes(term));
+            }
+
+            if (showByFilter && showBySearch) {
+                card.style.display = '';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Toggle No Results Message
+        const noResults = document.getElementById('rr-no-results');
+        if (noResults) {
+            if (visibleCount === 0) {
+                const h3 = noResults.querySelector('h3');
+                if (h3) {
+                    if (currentFilter !== 'all') {
+                        h3.textContent = 'No redirects found for ' + currentFilter;
+                    } else if (searchInput && searchInput.value) {
+                        h3.textContent = 'No results for "' + searchInput.value + '"';
+                    } else {
+                        h3.textContent = 'No redirects found';
+                    }
+                }
+                noResults.classList.remove('hidden');
+            } else {
+                noResults.classList.add('hidden');
+            }
+        }
+
+        updateReportSummary();
+    }
+
+    if (viewBtns.length > 0 && cardGrid) {
+        // Load saved view from cookie
+        const savedView = getCookie('rr_preferred_view');
+        if (savedView === 'list') {
+            cardGrid.classList.remove('card-view');
+            cardGrid.classList.add('list-view');
+            document.querySelector('.rr-view-btn[data-view="list"]')?.classList.add('active');
+            document.querySelector('.rr-view-btn[data-view="card"]')?.classList.remove('active');
+        }
+
+        viewBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                viewBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const view = btn.getAttribute('data-view');
+                
+                if (view === 'list') {
+                    cardGrid.classList.remove('card-view');
+                    cardGrid.classList.add('list-view');
+                } else {
+                    cardGrid.classList.remove('list-view');
+                    cardGrid.classList.add('card-view');
+                }
+                
+                // Save to cookie (30 days)
+                setCookie('rr_preferred_view', view, 30);
+            });
+        });
+    }
+    
+    // Initial summary
+    updateReportSummary();
 
 
 
@@ -337,6 +563,10 @@ document.addEventListener('DOMContentLoaded', () => {
         isEditing = true;
         editId = data.id;
 
+        // Scroll into view & focus input
+        dom.panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => { dom.form.querySelector('[name="slug"]').focus(); }, 400);
+
         // Populate Form
         dom.form.querySelector('[name="slug"]').value = data.slug;
         dom.form.querySelector('[name="code"]').value = data.code;
@@ -374,6 +604,7 @@ document.addEventListener('DOMContentLoaded', () => {
                  dom.postSearchInput.classList.add('hidden');
             }
         }
+        syncCustomSelects();
     };
 
     // Event delegation for edit buttons
@@ -528,8 +759,27 @@ document.addEventListener('DOMContentLoaded', () => {
             // Sync Type Input from Active Tab to ensure correctness
             const activeBtn = form404.querySelector('.rr-segment-btn.active');
             const typeInput = document.getElementById('rr-input-type');
+            let currentTypeValue = '';
+
             if(activeBtn && typeInput) {
-                typeInput.value = activeBtn.dataset.value;
+                currentTypeValue = activeBtn.dataset.value;
+                typeInput.value = currentTypeValue;
+            }
+
+            // Validation
+            if (currentTypeValue === 'post') {
+                const postId = document.getElementsByName('target_post_id')[0]?.value;
+                if (!postId || postId === '0') {
+                    alert('Please select a target page for the 404 redirect.');
+                    return;
+                }
+            } else if (currentTypeValue === 'url') {
+                const urlInput = document.getElementsByName('url_404')[0];
+                if (!urlInput || !urlInput.value.trim()) {
+                    alert('Please enter a destination URL for the 404 redirect.');
+                    urlInput?.focus();
+                    return;
+                }
             }
 
             const originalText = btn.textContent;
@@ -823,9 +1073,43 @@ document.addEventListener('DOMContentLoaded', () => {
             if(!file) return;
 
             const reader = new FileReader();
-            reader.onload = (e) => {
-                pendingImportData = e.target.result;
-                // Show Modal
+            reader.onload = (ev) => {
+                pendingImportData = ev.target.result;
+
+                // Parse import and detect conflicts against existing slugs
+                let importedRedirects = [];
+                try {
+                    importedRedirects = JSON.parse(pendingImportData);
+                    if (!Array.isArray(importedRedirects)) importedRedirects = [];
+                } catch(err) {
+                    alert('Invalid JSON file.');
+                    return;
+                }
+
+                // Get existing slugs from the DOM cards
+                const existingSlugs = new Set();
+                document.querySelectorAll('.rr-card[data-slug]').forEach(card => {
+                    existingSlugs.add(card.dataset.slug.toLowerCase());
+                });
+
+                const conflicts = importedRedirects.filter(r => r.slug && existingSlugs.has(r.slug.toLowerCase()));
+                const conflictCount = conflicts.length;
+
+                // Update modal with conflict info
+                const conflictSection = document.getElementById('rr-import-conflict-section');
+                const conflictCountEl = document.getElementById('rr-import-conflict-count');
+                const noConflictSection = document.getElementById('rr-import-no-conflict-section');
+
+                if (conflictCountEl) conflictCountEl.textContent = conflictCount;
+
+                if (conflictCount > 0) {
+                    if (conflictSection) conflictSection.classList.remove('hidden');
+                    if (noConflictSection) noConflictSection.classList.add('hidden');
+                } else {
+                    if (conflictSection) conflictSection.classList.add('hidden');
+                    if (noConflictSection) noConflictSection.classList.remove('hidden');
+                }
+
                 if(importModal) importModal.classList.remove('hidden');
             };
             reader.readAsText(file);
@@ -864,8 +1148,21 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(res => res.json())
         .then(res => {
             if(res.success) {
-                alert('Successfully imported ' + res.data + ' redirects.');
-                location.reload();
+                // Show logs modal
+                const logsStr = res.data.logs.join("\n");
+                const importStatusText = document.getElementById('rr-import-status-text');
+                const importLogsContent = document.getElementById('rr-import-logs-content');
+                if (importStatusText && importLogsContent) {
+                    importStatusText.textContent = `Completed processing. Success: ${res.data.success_count} | Failed: ${res.data.failed_count}`;
+                    importLogsContent.textContent = logsStr;
+                    
+                    if (importModal) importModal.classList.add('hidden');
+                    const logsModal = document.getElementById('rr-import-logs-modal');
+                    if (logsModal) logsModal.classList.remove('hidden');
+                } else {
+                    alert('Successfully imported ' + res.data.success_count + ' redirects.');
+                    location.reload();
+                }
             } else {
                 alert('Import failed: ' + (res.data || 'Unknown error'));
                 btn.textContent = originalText;
@@ -881,6 +1178,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if(otherBtn) otherBtn.disabled = false;
         });
     }
+
+    const btnCloseLogs = document.getElementById('rr-btn-close-logs');
+    const btnCloseLogsIcon = document.getElementById('rr-btn-close-logs-icon');
+    if (btnCloseLogs) btnCloseLogs.addEventListener('click', () => location.reload());
+    if (btnCloseLogsIcon) btnCloseLogsIcon.addEventListener('click', () => location.reload());
 
     if(btnMerge) btnMerge.addEventListener('click', () => doImport('merge'));
     if(btnOverwrite) {
@@ -927,8 +1229,13 @@ document.addEventListener('DOMContentLoaded', () => {
      let ticking = false;
 
      document.addEventListener('mousedown', (e) => {
-          // Check validity: must be inside wrapper, but NOT on interactive elements
-          if (!e.target.closest('.rr-wrapper')) return;
+          // Only allow drag selection in CARD VIEW
+          if (!grid.classList.contains('card-view')) return;
+
+          // Check validity: must be inside card view section, but NOT on search or filters
+          const mainArea = e.target.closest('[data-view="card"]');
+          if (!mainArea) return;
+          if (e.target.closest('.rr-search-container') || e.target.closest('.rr-filters')) return;
           if (e.target.closest('button') || e.target.closest('a') || e.target.closest('input') || e.target.closest('select') || e.target.closest('.rr-modal-overlay')) return;
           
           isDragging = true;
@@ -946,89 +1253,84 @@ document.addEventListener('DOMContentLoaded', () => {
 
      document.addEventListener('mousemove', (e) => {
          if (!isDragging || !box) return;
-         e.preventDefault(); // Stop text selection
+         e.preventDefault();
 
          const currentX = e.clientX;
          const currentY = e.clientY;
-         
-         const width = Math.abs(currentX - startX);
+         const width  = Math.abs(currentX - startX);
          const height = Math.abs(currentY - startY);
-         const left = Math.min(currentX, startX);
-         const top = Math.min(currentY, startY);
-         
-         box.style.width = width + 'px';
+         const left   = Math.min(currentX, startX);
+         const top    = Math.min(currentY, startY);
+
+         box.style.width  = width  + 'px';
          box.style.height = height + 'px';
-         box.style.left = left + 'px';
-         box.style.top = top + 'px';
-         
-         if(!ticking) {
-             window.requestAnimationFrame(() => {
-                 checkIntersections({ left, top, right: left+width, bottom: top+height });
-                 ticking = false;
-             });
-             ticking = true;
-         }
+         box.style.left   = left   + 'px';
+         box.style.top    = top    + 'px';
+
+         // PREVIEW PHASE: show subtle border on cards inside the drag box
+         const boxRect = box.getBoundingClientRect();
+         document.querySelectorAll('.rr-card').forEach(card => {
+             if (card.style.display === 'none') return;
+             if (card.classList.contains('is-selected')) return;
+             const r = card.getBoundingClientRect();
+             const hit = !(boxRect.right < r.left || boxRect.left > r.right || boxRect.bottom < r.top || boxRect.top > r.bottom);
+             card.classList.toggle('drag-preview', hit);
+         });
      });
 
      document.addEventListener('mouseup', () => {
           if (isDragging && box) {
+              // COMMIT PHASE: turn all previewed cards into fully selected
+              document.querySelectorAll('.rr-card.drag-preview').forEach(card => {
+                  card.classList.remove('drag-preview');
+                  const cb = card.querySelector('.rr-bulk-checkbox');
+                  if (cb && !cb.checked) {
+                      cb.checked = true;
+                      if (selectedIds && !selectedIds.has(cb.value)) {
+                          selectedIds.add(cb.value);
+                          card.style.borderColor = getComputedStyle(document.documentElement).getPropertyValue('--rr-primary');
+                          card.style.backgroundColor = '#fff1f2';
+                          card.classList.add('is-selected');
+                      }
+                  }
+              });
               box.remove();
               box = null;
+              updateBulkUI();
           }
           isDragging = false;
-          // Re-enable text selection
           document.body.style.userSelect = '';
           document.body.style.webkitUserSelect = '';
      });
-
-     function checkIntersections(boxRect) {
-         const cards = document.querySelectorAll('.rr-card');
-         cards.forEach(card => {
-             // Skip if hidden
-             if(card.style.display === 'none') return;
-             
-             const cardRect = card.getBoundingClientRect();
-             const isInter = !(
-                 boxRect.right < cardRect.left || 
-                 boxRect.left > cardRect.right || 
-                 boxRect.bottom < cardRect.top || 
-                 boxRect.top > cardRect.bottom
-             );
-             
-             if (isInter) {
-                 const cb = card.querySelector('.rr-bulk-checkbox');
-                 if (cb && !cb.checked) {
-                     cb.checked = true;
-                     // Trigger existing change logic
-                     // We manually trigger the logic because native 'change' isn't fired by JS
-                     if(selectedIds && !selectedIds.has(cb.value)) {
-                         selectedIds.add(cb.value);
-                         card.style.borderColor = getComputedStyle(document.documentElement).getPropertyValue('--rr-primary');
-                         card.style.backgroundColor = '#fff1f2';
-                         card.classList.add('is-selected');
-                     }
-                 }
-             }
-         });
-         updateBulkUI();
-     }
  }
 
  // ==========================================
  // COPY FUNCTIONALITY
  // ==========================================
- document.addEventListener('click', (e) => {
-     const btn = e.target.closest('.rr-copy-btn');
-     if(btn) {
-         e.preventDefault();
-         e.stopPropagation();
-         const textToCopy = btn.dataset.copy;
-         if(textToCopy) {
-             fallbackCopyTextToClipboard(textToCopy);
-             showCopyFeedback(btn);
-         }
-     }
- });
+  document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.rr-copy-btn');
+      const textElement = e.target.closest('.rr-card-slug, .rr-info-value');
+      
+      if(btn || textElement) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const target = btn || textElement;
+          const textToCopy = target.dataset.copy;
+          
+          if(textToCopy) {
+              fallbackCopyTextToClipboard(textToCopy);
+              
+              // Find associated button for feedback if text was clicked
+              let feedbackBtn = btn;
+              if (textElement) {
+                  feedbackBtn = textElement.closest('.rr-card-slug-wrap, .rr-card-info')?.querySelector('.rr-copy-btn');
+              }
+              
+              if (feedbackBtn) showCopyFeedback(feedbackBtn);
+          }
+      }
+  });
 
  function fallbackCopyTextToClipboard(text) {
      if (!navigator.clipboard) {
@@ -1076,5 +1378,26 @@ document.addEventListener('DOMContentLoaded', () => {
      }
  }
 
+  // Cookie Helpers
+  function setCookie(name, value, days) {
+      let expires = "";
+      if (days) {
+          let date = new Date();
+          date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+          expires = "; expires=" + date.toUTCString();
+      }
+      document.cookie = name + "=" + (value || "") + expires + "; path=/";
+  }
+
+  function getCookie(name) {
+      let nameEQ = name + "=";
+      let ca = document.cookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+          let c = ca[i];
+          while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+          if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+      }
+      return null;
+  }
 
 });

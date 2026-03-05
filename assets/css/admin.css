@@ -1,13 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --rr-primary: #f43f5e;
-    --rr-primary-hover: #e11d48;
-    --rr-bg: #f8fafc;
-    --rr-surface: #ffffff;
-    --rr-text-main: #0f172a;
-    --rr-text-secondary: #64748b;
-    --rr-border: #e2e8f0;
+    --rr-primary: #FA3C34;
+    --rr-primary-hover: #D70015;
+    --rr-secondary: #8E8E93;
+    --rr-tertiary: #C7C7CC;
+    --rr-bg: #F2F2F7;
+    --rr-surface: #FFFFFF;
+    --rr-text-main: #1D1D1F;
+    --rr-text-secondary: #8E8E93;
+    --rr-border: #C7C7CC;
     --rr-radius: 16px;
     --rr-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
     --rr-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
@@ -29,72 +31,162 @@
 /* ... existing code ... */
 
 /* Custom Input Styles to match screenshot */
+/* Premium Field & Input System */
+.rr-input, .rr-select-trigger {
+    width: 100%;
+    padding: 0 18px;
+    height: 52px;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    font-size: 15px;
+    font-family: 'Poppins', sans-serif;
+    color: #1a1a1a;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+}
+
 .rr-input-group {
     display: flex;
     align-items: stretch;
     width: 100%;
-    max-width: 100%; /* Prevent overflow */
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1.5px solid #e2e8f0;
+    transition: all 0.25s ease;
+}
+
+.rr-input-group:focus-within {
+    border-color: #151515;
+    box-shadow: 0 0 0 4px rgba(21, 21, 21, 0.06);
 }
 
 .rr-prefix-box {
-    background: var(--rr-primary);
+    background: #151515;
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 48px;
-    border-radius: 6px 0 0 6px;
+    width: 52px;
     font-size: 20px;
-    font-weight: 400;
+    font-weight: 600;
     flex-shrink: 0;
 }
 
-.rr-input, .rr-select {
-    width: 100%;
-    max-width: 100%; /* Prevent overflow */
-    padding: 0 16px; /* Reset padding for select vertical alignment */
-    line-height: 48px; /* Match height */
-    height: 48px; 
-    background: #f1f5f9;
-    border: 1px solid transparent;
-    border-radius: 6px;
-    font-size: 15px;
-    font-family: 'Poppins', sans-serif;
-    color: #334155;
-    transition: all 0.2s;
-    /* Native Dropdown Appearance */
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    box-sizing: border-box; /* Include padding in width */
-}
-
-/* Add custom arrow for select */
-.rr-select {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 0.5rem center;
-    background-repeat: no-repeat;
-    background-size: 1.5em 1.5em;
-    padding-right: 2.5rem; /* Space for arrow */
-}
-
-/* Restore normal input behavior since we used line-height trick */
-input.rr-input {
-    line-height: normal; /* Reset for text inputs */
-    padding: 14px 16px;
-}
-
 .rr-input-group .rr-input {
-    border-radius: 0 6px 6px 0;
+    border: none !important;
+    border-radius: 0 !important;
+    height: 50px !important; /* Internal to group */
+    background: transparent !important;
+    box-shadow: none !important;
 }
 
-.rr-input:focus, .rr-select:focus {
+.rr-input[type="text"]:focus, 
+.rr-input[type="url"]:focus {
+    border-color: #151515;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(21, 21, 21, 0.06);
     outline: none;
-    background: #e2e8f0;
 }
 
 .rr-input::placeholder {
-    color: #cbd5e1;
+    color: #94a3b8;
+}
+
+/* Custom Select Component Styles */
+.rr-select-custom {
+    position: relative;
+    width: 100%;
+}
+
+.rr-select-trigger {
+    cursor: pointer;
+    justify-content: space-between;
+    user-select: none;
+}
+
+.rr-select-trigger:hover {
+    border-color: #cbd5e1;
+    background: #fbfbfc;
+}
+
+.rr-select-trigger.active {
+    border-color: #151515;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(21, 21, 21, 0.05);
+}
+
+.rr-select-trigger .dashicons {
+    color: #94a3b8;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+.rr-select-trigger.active .dashicons {
+    transform: rotate(180deg);
+}
+
+.rr-select-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 100%;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.12), 0 5px 15px rgba(0,0,0,0.08);
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid rgba(0,0,0,0.05);
+    transform-origin: top center;
+}
+
+.rr-select-dropdown.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.rr-select-option {
+    padding: 14px 18px;
+    font-size: 14px;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 1px solid #f8fafc;
+}
+
+.rr-select-option:last-child {
+    border-bottom: none;
+}
+
+.rr-select-option:hover {
+    background: #f1f5f9;
+    color: #151515;
+    padding-left: 22px;
+}
+
+.rr-select-option.selected {
+    background: #f8fafc;
+    color: #151515;
+    font-weight: 600;
+}
+
+/* Hide fallback native select while retaining accessibility */
+.rr-select-native {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    height: 0;
+    width: 0;
 }
 
 .rr-wrapper * {
@@ -111,7 +203,7 @@ input.rr-input {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 40px;
+    margin-bottom: 5vmax;
 }
 
 .rr-brand {
@@ -121,16 +213,17 @@ input.rr-input {
 }
 
 .rr-logo-icon {
-    width: 56px;
-    height: 56px;
-    background: transparent; /* Removed white bg */
-    border-radius: 12px;
-    padding: 0; /* Removed padding */
-    box-shadow: none; /* Removed shadow */
-    border: none; /* Removed border */
+    width: 48px;
+    height: 48px;
+    background: transparent;
+    border-radius: 8px;
+    padding: 0;
+    box-shadow: none;
+    border: none;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .rr-logo-icon img {
@@ -162,32 +255,93 @@ input.rr-input {
     font-weight: 600;
     font-size: 14px;
     border-radius: 12px;
-    border: none;
+    border: 1px solid transparent;
     cursor: pointer;
     transition: all 0.2s;
     font-family: 'Outfit', sans-serif;
 }
 
 .rr-btn-primary {
-    background: var(--rr-primary);
+    background: #151515;
     color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .rr-btn-primary:hover {
-    background: var(--rr-primary-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);
+    background: #000000;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.rr-btn-outline {
+    background: transparent;
+    color: #151515;
+    border: 2px solid #151515;
+    box-shadow: none;
+}
+
+.rr-btn-outline:hover {
+    background: #151515;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(250, 60, 52, 0.2);
 }
 
 .rr-btn-secondary {
-    background: white;
-    color: var(--rr-text-main);
-    border: 1px solid var(--rr-border);
+    background: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
 }
 
 .rr-btn-secondary:hover {
-    background: var(--rr-bg);
+    background: white;
     border-color: #cbd5e1;
+    color: #1e293b;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* Ghost Buttons for Support/Social */
+.header-action-btn.rr-btn-secondary {
+    background: transparent;
+    border-color: transparent;
+    color: #64748b;
+}
+
+.header-action-btn.rr-btn-secondary:hover {
+    background: white;
+    color: #1e293b;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Header Button Micro-Animations */
+.header-action-btn:hover .dashicons-star-filled { animation: rr-star-rot 0.4s ease-in-out; }
+.header-action-btn:hover .dashicons-heart { animation: rr-heart-pulse 0.8s ease-in-out infinite; }
+.header-action-btn:hover .dashicons-upload { animation: rr-slide-up 0.5s ease-in-out infinite; }
+.header-action-btn:hover .dashicons-download { animation: rr-slide-down 0.5s ease-in-out infinite; }
+
+@keyframes rr-star-rot {
+    0% { transform: rotate(0); }
+    100% { transform: rotate(72deg); }
+}
+@keyframes rr-heart-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+@keyframes rr-slide-up {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+@keyframes rr-slide-down {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(3px); }
+}
+
+.rr-btn.selected {
+    border: 1px solid var(--rr-primary);
+    box-shadow: none;
 }
 
 /* Search Bar */
@@ -242,47 +396,506 @@ input.rr-input {
 }
 
 /* Masonry Grid */
-/* Grid Layout (Left-to-Right) */
-.rr-grid {
+/* Views */
+.rr-grid.card-view {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 24px;
     width: 100%;
 }
 
+.rr-grid.list-view {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+/* ==============================================
+   LIST VIEW — pure flex row, NO absolute positioning
+   display:contents dissolves .rr-card-bottom so
+   checkbox + actions become direct card flex items
+   ============================================== */
+.rr-grid.list-view .rr-card {
+    flex-direction: row;
+    align-items: center;
+    min-height: 56px;
+    padding: 8px 12px !important;
+    gap: 0;
+    border-radius: 10px !important;
+}
+
+/* Dissolve the bottom bar — children become card's flex items */
+.rr-grid.list-view .rr-card-bottom {
+    display: contents !important;
+    opacity: 1 !important;
+    transform: none !important;
+}
+
+/* Checkbox: first in the row (order -1) */
+.rr-grid.list-view .rr-card-select {
+    order: -1;
+    flex: 0 0 36px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+}
+
+/* Always show checkbox in list view */
+.rr-grid.list-view .rr-card-select .rr-checkbox-style {
+    transform: scale(1) !important;
+    opacity: 1 !important;
+}
+
+/* Actions group: last in the row (order 99) */
+.rr-grid.list-view .rr-card-actions-group {
+    order: 99;
+    flex: 0 0 auto;
+    display: flex !important;
+    align-items: center;
+    opacity: 1 !important;
+    position: static !important;
+    transform: none !important;
+    padding-left: 12px;
+    gap: 4px;
+    border-left: 1px solid #f1f5f9;
+}
+
+/* ---- Slug column ---- */
+.rr-grid.list-view .rr-card-slug-wrap {
+    order: 0;
+    flex: 0 0 150px;
+    min-width: 0;
+    max-width: 150px;
+    padding: 0 12px 0 8px !important;
+    gap: 4px;
+    display: flex;
+    align-items: center;
+    border-right: 1px solid #f1f5f9;
+}
+
+.rr-grid.list-view .rr-card-slug {
+    font-size: 14px !important;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Always show slug copy in list view */
+.rr-grid.list-view .rr-slug-copy {
+    opacity: 1 !important;
+    flex-shrink: 0;
+}
+
+/* ---- URL info column ---- */
+.rr-grid.list-view .rr-card-info {
+    order: 1;
+    flex: 1;
+    min-width: 0;
+    margin: 0 !important;
+    padding: 0 12px !important;
+    background: transparent;
+    border-radius: 0;
+    border-right: 1px solid #f1f5f9;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Hide label, show URL value on one line */
+.rr-grid.list-view .rr-info-label { display: none; }
+.rr-grid.list-view .rr-info-value {
+    display: block !important;
+    -webkit-line-clamp: unset !important;
+    line-clamp: unset !important;
+    white-space: nowrap !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 13px;
+    color: #475569 !important;
+}
+
+/* ---- Status + Hits ---- */
+.rr-grid.list-view .rr-card-footer {
+    order: 2;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px !important;
+    margin: 0 !important;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
+.rr-grid.list-view .rr-date-badge,
+.rr-grid.list-view .rr-override-indicator { display: none; }
+
+/* No lift in list view */
+.rr-grid.list-view .rr-card:hover { transform: none; }
+
+/* ================================================
+   WordPress Sidebar Icon — all admin pages
+   Uses WP's native padding approach (NOT flex)
+   ================================================ */
+#toplevel_page_romeo-redirect-manager .wp-menu-image {
+    /* Keep WP defaults to avoid layout conflicts */
+    display: block !important;
+    float: left !important;
+    width: 36px !important;
+}
+
+#toplevel_page_romeo-redirect-manager .wp-menu-image img {
+    display: inline-block !important;
+    width: 20px !important;
+    height: 20px !important;
+    max-width: 20px !important;
+    max-height: 20px !important;
+    padding: 7px 0 0 0 !important;  /* WP native vertical centering */
+    margin: 0 auto !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: none !important;
+    opacity: 0.6;                   /* WP dims unselected icons */
+    transition: opacity 0.15s ease;
+}
+
+/* Active / current menu state */
+.wp-has-current-submenu#toplevel_page_romeo-redirect-manager .wp-menu-image img,
+.current-menu-item#toplevel_page_romeo-redirect-manager .wp-menu-image img,
+#toplevel_page_romeo-redirect-manager:hover .wp-menu-image img {
+    opacity: 1 !important;
+}
+
+/* Filters & Toggles */
+.rr-filter-btn {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 2px solid #e2e8f0;
+    background: transparent;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.rr-filter-btn:hover {
+    border-color: #cbd5e1;
+    color: #334155;
+    background: #f8fafc;
+}
+.rr-filter-btn.active {
+    background: white;
+    color: #1e293b;
+    border-color: var(--rr-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+/* Per-code active filter colors matching the dot colors */
+.rr-filter-btn[data-filter="301"].active { border-color: #3b82f6; color: #1d4ed8; }
+.rr-filter-btn[data-filter="302"].active { border-color: #f59e0b; color: #b45309; }
+.rr-filter-btn[data-filter="307"].active { border-color: #8b5cf6; color: #6d28d9; }
+.rr-filter-btn[data-filter="308"].active { border-color: #ec4899; color: #be185d; }
+
+/* Empty States */
+.rr-empty-state {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 40px;
+    background: white;
+    border-radius: 20px;
+    border: 2px dashed #e2e8f0;
+    text-align: center;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin: 20px 0;
+}
+
+.rr-empty-state:hover {
+    border-color: #cbd5e1;
+    background: #fbfbfc;
+}
+
+.rr-empty-state .dashicons {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: #cbd5e1;
+    margin-bottom: 24px;
+    opacity: 0.8;
+}
+
+.rr-empty-state h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 12px 0;
+}
+
+.rr-empty-state p {
+    font-size: 15px;
+    color: #64748b;
+    margin: 0;
+    max-width: 320px;
+    line-height: 1.6;
+}
+
+/* Report Summary Chips */
+#rr-report-summary {
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+    margin-bottom: 24px;
+    text-align: right;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.rr-summary-chips {
+    display: inline-flex;
+    gap: 16px;
+    margin-left: 16px;
+}
+
+.rr-summary-chip {
+    padding: 4px 10px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border-left: 3px solid var(--chip-color);
+    user-select: none;
+}
+
+.rr-summary-chip:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border-color: var(--chip-color);
+    background: #f8fafc;
+}
+
+.rr-summary-chip:active {
+    transform: translateY(0);
+}
+
+.rr-summary-chip strong {
+    color: #1e293b;
+    margin-left: 2px;
+}
+.rr-view-btn {
+    background: transparent;
+    border: none;
+    color: var(--rr-text-secondary);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    padding: 4px;
+}
+.rr-view-btn.active {
+    color: var(--rr-primary);
+    background: var(--rr-bg);
+}
 
 
-/* Cards */
+
 .rr-card {
     background: white;
     border-radius: 20px;
-    padding: 24px;
     border: 1px solid transparent;
     transition: all 0.2s ease;
-    cursor: pointer;
-    position: relative;
+    cursor: auto;
+    display: flex;
+    flex-direction: column;
     box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    overflow: visible;
+    position: relative;
 }
 
 .rr-card:hover {
-    border-color: rgba(244, 63, 94, 0.5); /* Rose 500 at 50% */
+    border: 1px solid #000;
     transform: translateY(-2px);
-    box-shadow: 0 12px 20px -5px rgba(244, 63, 94, 0.08);
+    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1), 0 4px 8px -2px rgba(0, 0, 0, 0.05); /* soft shadow multiple layer */
 }
 
 .rr-card.active-edit {
-    border-color: var(--rr-primary);
-    box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.1);
+    border-color: #000;
+    box-shadow: 0 0 0 1px #000;
+}
+
+/* ==============================================
+   CARD: Slug wrap — [/slug text] [copy btn]
+   ============================================== */
+.rr-card-slug-wrap {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+    padding: 22px 24px 12px 24px;
 }
 
 .rr-card-slug {
-    font-size: 28px;
-    color: #334155;
-    font-weight: 500;
-    margin-bottom: 20px;
+    font-size: 22px;
+    color: #1e293b;
+    font-weight: 700;
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+    letter-spacing: -0.02em;
+    flex: 1;
+    min-width: 0;
+    cursor: pointer;
+}
+
+/* Slash color matches the redirect code dot color */
+.rr-card-slug .slash {
+    color: var(--rr-primary); /* fallback */
+    margin-right: 1px;
+    font-weight: 400;
+}
+/* !important ensures these beat any inherited or inline color */
+.rr-card[data-code="301"] .slash { color: #3b82f6 !important; } /* Blue  */
+.rr-card[data-code="302"] .slash { color: #f59e0b !important; } /* Amber */
+.rr-card[data-code="307"] .slash { color: #8b5cf6 !important; } /* Purple*/
+.rr-card[data-code="308"] .slash { color: #ec4899 !important; } /* Pink  */
+
+/* Dot colors for the status indicator */
+.rr-status-dot.code-301 { background: #3b82f6; box-shadow: 0 0 0 3px #dbeafe; }
+.rr-status-dot.code-302 { background: #f59e0b; box-shadow: 0 0 0 3px #fef3c7; }
+.rr-status-dot.code-307 { background: #8b5cf6; box-shadow: 0 0 0 3px #ede9fe; }
+.rr-status-dot.code-308 { background: #ec4899; box-shadow: 0 0 0 3px #fce7f3; }
+
+/* Card drag-preview state: shows a subtle border while dragging, no background change */
+.rr-card.drag-preview {
+    border-color: #94a3b8 !important;
+    box-shadow: 0 0 0 2px #e2e8f0 !important;
+    background-color: white !important;
+}
+
+/* Source URL copy button next to slug */
+.rr-slug-copy {
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    color: #d1d5db;
+    cursor: pointer;
+    padding: 3px 4px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;                   /* Always visible as requested */
+    transition: opacity 0.15s, color 0.15s;
+}
+
+.rr-slug-copy:hover {
+    color: #151515;
+    background: #f1f5f9;
+}
+
+.rr-slug-copy .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    line-height: 14px;
+}
+
+/* ==============================================
+   CARD: Bottom bar — [checkbox LEFT] [actions RIGHT]
+   Fades in on hover. Checkbox grows from center.
+   ============================================== */
+.rr-card-bottom {
     display: flex;
-    align-items: baseline;
-    line-height: 1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 20px 20px 20px;
+    margin-top: auto;
+}
+
+/* Checkbox on the LEFT */
+.rr-card-select {
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+/* Checkbox visual: starts at scale(0) invisible, grows from center on hover */
+.rr-card-select .rr-checkbox-style {
+    transform: scale(1);
+    opacity: 1;
+    transition:
+        transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+        opacity 0.15s ease,
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+    transform-origin: center center;
+}
+
+/* Keep visible when checked */
+.rr-card:has(.rr-bulk-checkbox:checked) .rr-card-select .rr-checkbox-style {
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* Action buttons group on the RIGHT — fades in separately */
+.rr-card-actions-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    opacity: 1;                   /* Always visible as requested */
+    transition: opacity 0.15s ease;
+}
+
+/* Remove old .rr-inline-copy hover opacity — now only used in info box */
+.rr-inline-copy {
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    color: #d1d5db;
+    cursor: pointer;
+    padding: 3px 4px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s, background 0.2s;
+}
+
+.rr-inline-copy:hover {
+    color: #151515;
+    background: #f1f5f9;
+}
+
+.rr-inline-copy .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    line-height: 14px;
+}
+
+.rr-slug-text {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    white-space: normal;
 }
 
 .rr-card-slug .slash {
@@ -291,11 +904,27 @@ input.rr-input {
     font-weight: 400;
 }
 
+.rr-card[data-code="301"] .slash { color: #34C759; } /* Green */
+.rr-card[data-code="302"] .slash { color: #FF9500; } /* Orange */
+.rr-card[data-code="307"] .slash { color: #AF52DE; } /* Purple */
+.rr-card[data-code="308"] .slash { color: #FF2D55; } /* Pink */
+
+/* Card Info block */
 .rr-card-info {
     background: #f8fafc;
     border-radius: 8px;
     padding: 12px 16px;
-    margin-bottom: 20px;
+    margin: 0 24px 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.rr-card-info-inner {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .rr-info-label {
@@ -309,15 +938,17 @@ input.rr-input {
 }
 
 .rr-info-value {
-    display: block;
     font-size: 13px;
-    color: var(--rr-primary); 
+    color: #1e293b !important;
+    text-decoration: none !important;
     font-family: 'Poppins', sans-serif;
+    display: block;
+    cursor: pointer;
     
     /* Truncation */
     display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -325,12 +956,98 @@ input.rr-input {
     white-space: normal;
     word-break: break-all;
     line-height: 1.4;
+    
+    /* Animated underline on hover */
+    background-image: linear-gradient(currentColor, currentColor);
+    background-position: 0% 100%;
+    background-repeat: no-repeat;
+    background-size: 0% 1px;
+    transition: background-size 0.3s ease;
+    width: fit-content;
+    max-width: 100%;
+}
+
+.rr-info-value:hover {
+    background-size: 100% 1px;
 }
 
 .rr-card-footer {
     display: flex;
+    flex-direction: row;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 20px 16px 24px;
+}
+
+.rr-status-block {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.rr-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 2px #e2e8f0;
+}
+
+.rr-status-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.rr-hits-badge {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.rr-hits-num {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1;
+}
+
+.rr-hits-lbl {
+    font-size: 10px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.rr-date-badge {
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 500;
+    flex-basis: 100%;
+    margin-top: 2px;
+}
+
+.rr-override-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.rr-override-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #f97316;
+    flex-shrink: 0;
+}
+
+.rr-override-indicator span {
+    font-size: 12px;
+    font-weight: 600;
+    color: #ea580c;
 }
 
 .rr-status {
@@ -354,6 +1071,59 @@ input.rr-input {
 .rr-status-dot.code-307 { background: #8b5cf6; box-shadow: 0 0 0 2px #ede9fe; }
 .rr-status-dot.code-308 { background: #ec4899; box-shadow: 0 0 0 2px #fce7f3; }
 
+/* Interactive Status List */
+.rr-status-item {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    transition: all 0.2s ease;
+}
+
+.rr-status-item:hover {
+    background: white;
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transform: translateX(4px);
+}
+
+.rr-status-item-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.rr-status-item-body {
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.5;
+    padding-left: 20px; /* Aligns with text after dot+num */
+}
+
+.rr-code-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.rr-code-dot.code-301 { background: #3b82f6; box-shadow: 0 0 0 3px #dbeafe; }
+.rr-code-dot.code-302 { background: #f59e0b; box-shadow: 0 0 0 3px #fef3c7; }
+.rr-code-dot.code-307 { background: #8b5cf6; box-shadow: 0 0 0 3px #ede9fe; }
+.rr-code-dot.code-308 { background: #ec4899; box-shadow: 0 0 0 3px #fce7f3; }
+
+.rr-code-num {
+    font-weight: 800;
+    color: #1e293b;
+    font-size: 15px;
+}
+
+.rr-code-desc {
+    color: #475569;
+    font-size: 14px;
+    font-weight: 600;
+}
+
 .rr-hits {
     font-size: 11px;
     font-weight: 600;
@@ -363,22 +1133,25 @@ input.rr-input {
     border-radius: 20px;
 }
 
-/* Actions Overlay (Edit/Delete) */
-/* Actions Overlay (Edit/Delete) */
-.rr-card-actions {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    gap: 8px;
-    opacity: 0;
-    transform: translateY(-5px);
-    transition: all 0.2s ease;
+.rr-copy-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+.rr-copy-btn:hover {
+    color: var(--rr-text-main);
+    background: #e2e8f0;
 }
 
-.rr-card:hover .rr-card-actions {
-    opacity: 1;
-    transform: translateY(0);
+/* Actions bar REPLACED by .rr-card-actions-group inside .rr-card-bottom */
+.rr-card-actions {
+    display: none; /* Legacy rule, not used */
 }
 
 .rr-action-btn {
@@ -409,11 +1182,84 @@ input.rr-input {
     margin: 0;
 }
 
-.rr-action-btn:hover {
-    background: var(--rr-primary);
-    color: white;
+.rr-action-btn:hover,
+.rr-action-btn:hover .dashicons {
+    background: #f1f5f9;
+    color: #151515;
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px -2px rgba(244, 63, 94, 0.4);
+    box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.1);
+}
+
+.rr-action-btn.rr-delete-action-btn {
+    color: var(--rr-secondary) !important;
+}
+.rr-action-btn.rr-delete-action-btn:hover {
+    background: #FFEBEE !important;
+    color: var(--rr-primary) !important;
+    border-color: var(--rr-primary) !important;
+}
+
+/* Bulk Checkboxes */
+.rr-checkbox-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    flex-shrink: 0;
+    aspect-ratio: 1 / 1;
+}
+.rr-checkbox-wrapper input.rr-bulk-checkbox {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+.rr-checkbox-style {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 24px;
+    width: 24px;
+    background-color: #f8fafc;
+    border: 2px solid #cbd5e1;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    aspect-ratio: 1 / 1;
+}
+.rr-card:hover .rr-checkbox-style {
+    border-color: #94a3b8;
+}
+.rr-checkbox-wrapper input.rr-bulk-checkbox:checked ~ .rr-checkbox-style {
+    background-color: #ffffff;
+    border-color: var(--rr-primary);
+    /* SVG checkmark with primary color instead of white */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none'%3E%3Cpath stroke='%23FA3C34' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' d='M2.5 7L5.5 10L11.5 4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 13px 13px;
+    box-shadow: 0 0 0 4px rgba(250, 60, 52, 0.1);
+}
+/* Hide the old CSS pseudo-element checkmark */
+.rr-checkbox-style:after { display: none !important; }
+
+/* Card Selection Highlighting */
+.rr-card:has(.rr-bulk-checkbox:checked) {
+    border: 1px solid var(--rr-primary);
+    background-color: #FFF5F5 !important;
+    box-shadow: 0 0 0 1px var(--rr-primary);
+}
+.rr-card:has(.rr-bulk-checkbox:checked) .rr-card-info {
+    background-color: white;
+}
+
+/* Bulk Float Bar Styling Additions */
+.rr-btn-delete-bulk svg {
+    margin-right: 4px;
+}
+.rr-btn-delete-bulk:hover {
+    background: #ffe3e6 !important;
 }
 
 /* Creator Form */
@@ -460,56 +1306,8 @@ input.rr-input {
 }
 
 /* Refined Inputs and Selects */
-.rr-input, .rr-select {
-    width: 100%;
-    padding: 0 16px;
-    line-height: normal;
-    height: 44px; /* Slightly more compact */
-    background: #f1f5f9;
-    border: 1px solid transparent;
-    border-radius: 8px; /* Matching screenshot's radius */
-    font-size: 14px;
-    font-family: 'Poppins', sans-serif;
-    color: #334155;
-    transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
-    box-shadow: none; /* Flat look from screenshot */
-    
-    /* Native Appearance Reset */
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-}
+/* Modern Input & Select System Redundant Rules Removed */
 
-select.rr-input {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 16px center;
-    background-size: 18px;
-    padding-right: 48px !important;
-    padding-left: 16px; 
-    cursor: pointer;
-    background-color: #ffffff;
-    border: 1px solid #f1f5f9; /* Very subtle border */
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02); /* Premium soft shadow */
-    color: #1e293b;
-    font-weight: 500;
-    height: 48px; /* Taller, premium feel */
-    border-radius: 12px; /* Smooth */
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-select.rr-input:hover {
-    border-color: #e2e8f0;
-    transform: translateY(-1px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
-}
-
-select.rr-input:focus {
-    border-color: #fb923c;
-    box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.1), 0 10px 15px -3px rgba(0, 0, 0, 0.04);
-    transform: translateY(-1px);
-    outline: none;
-}
 
 .rr-input-group .rr-input {
     border-radius: 0 8px 8px 0;
@@ -517,40 +1315,14 @@ select.rr-input:focus {
     width: auto;
 }
 
-.rr-prefix-box {
-    background: var(--rr-primary);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px; /* Match height */
-    min-width: 44px;
-    border-radius: 8px 0 0 8px;
-    font-size: 18px;
-    font-weight: 600; /* Bolder slash */
-    box-shadow: none;
-}
 
-/* Focus State */
-.rr-input:focus, .rr-select:focus {
-    outline: none;
-    background: #e2e8f0; /* Darker grey focus */
-    border-color: transparent;
-    box-shadow: none;
-}
 
-.rr-input::placeholder {
-    color: #94a3b8;
-    font-weight: 400;
-}
-
-/* Action Buttons */
 .rr-form-actions {
     display: flex;
     justify-content: flex-end;
     gap: 12px;
     margin-top: 32px;
-    padding-top: 24px; /* separate from form */
+    padding-top: 24px;   /* separate from form */
 }
 
 .rr-btn-cancel {
@@ -570,19 +1342,21 @@ select.rr-input:focus {
 }
 
 .rr-btn-save {
-    background: var(--rr-primary);
+    background: #151515;
     color: white;
     border: none;
     font-weight: 700;
     padding: 10px 24px;
     border-radius: 6px;
     font-size: 14px;
-    box-shadow: 0 2px 4px rgba(244, 63, 94, 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s;
 }
 
 .rr-btn-save:hover {
-    background: var(--rr-primary-hover);
+    background: #000000;
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* Empty State */
@@ -707,7 +1481,7 @@ select.rr-input:focus {
         align-items: center;
         justify-content: space-between;
         gap: 12px;
-        margin-bottom: 20px;
+        margin-bottom: 5vmax;
         width: 100%;
         padding: 0;
     }
@@ -802,26 +1576,25 @@ select.rr-input:focus {
         max-width: 100%;
     }
 
-    .rr-label {
-        font-size: 13px;
-        margin-bottom: 8px;
-        font-weight: 700;
-    }
-
-    .rr-input, .rr-select {
-        height: 50px !important;
+    .rr-input, .rr-select, .rr-wrapper select.rr-input {
+        height: 54px !important;
         font-size: 16px !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        padding: 0 14px !important;
-        box-sizing: border-box !important;
-        border-radius: 10px !important;
+        padding: 0 18px !important;
+        border-radius: 14px !important;
+        background-color: #ffffff !important;
     }
 
-    .rr-select {
-        padding-right: 40px !important;
-        background-size: 1.3em 1.3em !important;
-        background-position: right 10px center !important;
+    .rr-select, .rr-wrapper select.rr-select {
+        background-position: right 14px center !important;
+        background-size: 20px 20px !important;
+        padding-right: 48px !important;
+    }
+
+    .rr-prefix-box {
+        width: 54px;
+        min-width: 54px;
+        height: 54px;
+        border-radius: 14px 0 0 14px !important;
     }
 
     .rr-prefix-box {
@@ -1057,6 +1830,8 @@ select.rr-input:focus {
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
+    flex-shrink: 0;
+    aspect-ratio: 1 / 1;
 }
 
 .rr-checkbox-style::after {
@@ -1086,22 +1861,28 @@ select.rr-input:focus {
     width: 40px;
     height: 40px;
     border-radius: 12px;
-    background: white;
+    background: #f8fafc;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid transparent;
+    border: 1px solid #e2e8f0;
     cursor: pointer;
-    transition: all 0.2s;
-    color: #64748b;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    color: #94a3b8;
     opacity: 1 !important;
     text-decoration: none;
 }
 .rr-action-btn:hover {
-    background: #f8fafc;
+    background: white;
     color: var(--rr-primary);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    transform: translateY(-2px);
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+.rr-action-btn.rr-delete-btn:hover {
+    color: #ef4444;
+    background: #fff5f5;
+    border-color: #fecaca;
 }
 .rr-action-btn .dashicons {
     font-size: 20px;
@@ -1168,7 +1949,7 @@ select.rr-input:focus {
 }
 
 .rr-btn-delete-bulk {
-    background: #ef4444;
+    background: var(--rr-secondary);
     color: white;
     border: none;
     padding: 10px 20px;
@@ -1180,14 +1961,16 @@ select.rr-input:focus {
     gap: 8px;
     cursor: pointer;
     transition: all 0.2s;
-    box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);
+    box-shadow: 0 4px 6px -1px rgba(142, 142, 147, 0.3);
 }
 
 .rr-btn-delete-bulk:hover {
-    background: #dc2626;
+    background: var(--rr-tertiary);
     transform: translateY(-1px);
-    box-shadow: 0 6px 8px -1px rgba(239, 68, 68, 0.4);
+    box-shadow: 0 6px 8px -1px rgba(199, 199, 204, 0.4);
 }
+
+/* Removed #rr-bulk-select-all-btn lock */
 
 @keyframes slideUp {
     from { transform: translateX(-50%) translateY(100%); opacity: 0; }
@@ -1264,79 +2047,6 @@ select.rr-input:focus {
         padding: 8px 16px;
         width: 90%;
     }
-}
-
-/* Redesign: Robust Layout (Padding on Children) */
-.rr-card {
-    display: flex;
-    flex-direction: column;
-    padding: 0 !important; /* Remove container padding */
-    overflow: hidden;
-    border: 1px solid transparent;
-}
-
-.rr-card-slug {
-    order: 1;
-    /* Top, Right, Bottom, Left padding - Keep consistent spacing */
-    padding: 24px 24px 0 24px !important;
-    margin-bottom: 16px;
-    
-    width: 100%;
-    box-sizing: border-box;
-    
-    /* Truncation (2 Lines) */
-    display: -webkit-box !important;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden !important;
-    text-overflow: ellipsis;
-    
-    white-space: normal !important;
-    word-break: break-all !important;
-    line-height: 1.3;
-}
-
-.rr-card-info {
-    order: 2;
-    /* Use margin for side spacing to preserve its own internal padding/bg */
-    margin: 0 12px 8px 12px;
-}
-
-.rr-card-footer { /* Stats row */
-    order: 3;
-    padding: 0 24px 24px 24px;
-    margin-bottom: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-}
-
-.rr-card-actions { /* Footer Actions row */
-    order: 4;
-    position: relative !important;
-    top: auto !important;
-    right: auto !important;
-    
-    /* Natural 100% width */
-    width: 100%;
-    
-    /* Push to bottom of card (Grid stretches height, this fills space) */
-    margin-top: auto !important; 
-    margin-right: 0 !important;
-    margin-bottom: 0 !important;
-    margin-left: 0 !important;
-    
-    padding: 16px 24px;
-    border-top: 1px solid #f1f5f9;
-    background: #f8fafc;
-    border-radius: 0; /* Bottom corners handled by container overflow */
-    box-sizing: border-box;
-    
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 12px;
 }
 
 /* Mobile adjustments */
@@ -1686,41 +2396,52 @@ select.rr-input:focus {
 
 /* Segmented Control for 404 */
 .rr-segmented-control {
-    display: flex;
-    width: fit-content;
+    display: inline-flex;
     background: #f1f5f9;
-    padding: 4px;
-    border-radius: 8px;
-    margin-bottom: 24px;
+    padding: 6px;
+    border-radius: 14px;
+    margin-bottom: 32px;
     position: relative;
-    z-index: 99; /* Higher index */
+    z-index: 10;
+    gap: 4px;
+    border: 1px solid #e2e8f0;
 }
 
 .rr-segment-btn {
-    padding: 8px 16px;
+    padding: 10px 20px;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     color: #64748b;
-    border-radius: 6px;
+    border-radius: 10px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     user-select: none;
-    border: 1px solid transparent;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 10px;
 }
 
 .rr-segment-btn:hover {
     color: #334155;
+    background: rgba(255,255,255,0.5);
 }
 
 .rr-segment-btn.active {
-    background: white;
-    color: var(--rr-primary);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    border-color: #e2e8f0;
-    font-weight: 600;
+    background: #151515;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateY(-1px);
+}
+
+.rr-segment-btn .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    transition: transform 0.2s ease;
+}
+
+.rr-segment-btn.active .dashicons {
+    transform: scale(1.1);
 }
 
 .rr-404-input-wrapper {
@@ -1737,8 +2458,8 @@ select.rr-input:focus {
 /* Drag Selection Box */
 .rr-drag-box {
     position: fixed;
-    background: rgba(251, 146, 60, 0.15);
-    border: 1px solid rgba(251, 146, 60, 0.5);
+    background: rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.2);
     z-index: 10000;
     pointer-events: none; /* Pass events through */
     border-radius: 4px;
@@ -1746,21 +2467,28 @@ select.rr-input:focus {
 }
 
 .rr-copy-btn {
-    background: none;
-    border: none;
-    color: #cbd5e1;
+    background: white;
+    border: 1px solid #e2e8f0;
+    color: #94a3b8;
     cursor: pointer;
-    margin-left: 8px;
     padding: 0;
-    width: 24px;
-    height: 24px;
-    border-radius: 4px;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     opacity: 0; 
     flex-shrink: 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+@media (max-width: 768px) {
+    .rr-copy-btn {
+        opacity: 1;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
 }
 
 .rr-card:hover .rr-copy-btn {
@@ -1768,14 +2496,31 @@ select.rr-input:focus {
 }
 
 .rr-copy-btn:hover {
-    color: var(--rr-primary);
-    background: #f1f5f9;
+    color: #151515;
+    background: white;
+    border-color: #151515;
+    transform: scale(1.05) translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
 }
 
 .rr-copy-btn .dashicons {
     font-size: 16px; 
     width: 16px; 
     height: 16px;
+    line-height: 16px;
+}
+
+/* Specific alignment fixes */
+.rr-card-slug-wrap {
+    padding-right: 16px; /* Balance with the button's right margin if any */
+}
+
+.rr-card-info {
+    padding-right: 12px;
+}
+
+.rr-slug-copy {
+    margin-right: 8px; /* Align with the inner info box button */
 }
 .rr-form-help {
     color: #64748b;
@@ -1811,5 +2556,362 @@ select.rr-input:focus {
     .rr-404-container .rr-btn-save {
         width: 100%;
         justify-content: center;
+    }
+}
+
+/* === Author link animated underline === */
+.rr-brand small a {
+    text-decoration: none !important;
+    color: var(--rr-primary);
+    font-weight: 600;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-position: 0% 100%;
+    background-repeat: no-repeat;
+    background-size: 0% 1px;
+    transition: background-size 0.3s ease;
+}
+.rr-brand small a:hover {
+    background-size: 100% 1px;
+}
+
+/* === Modern Native Select Option Styling === */
+select.rr-input, 
+select.rr-select {
+    cursor: pointer;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+select.rr-input:focus, 
+select.rr-select:focus {
+    border-color: var(--rr-primary);
+    box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.08); /* Subtle glow */
+}
+
+select.rr-input option,
+select.rr-select option {
+    background: #ffffff;
+    color: #1e293b;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    padding: 12px 16px;
+}
+
+/* Chrome/Safari modern hover/checked effect */
+select.rr-input option:hover,
+select.rr-select option:hover,
+select.rr-input option:checked,
+select.rr-select option:checked,
+select.rr-input option:focus,
+select.rr-select option:focus {
+    background-color: var(--rr-primary) !important;
+    color: white !important;
+}
+
+/* === Copy button consistent sizing === */
+.rr-copy-target {
+    width: 32px !important;
+    height: 32px !important;
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+/* === Card selection highlight with new class === */
+.rr-card:has(.rr-bulk-checkbox:checked) {
+    border: 1px solid var(--rr-primary) !important;
+    background-color: #FFF5F5 !important;
+    box-shadow: 0 0 0 1px var(--rr-primary) !important;
+}
+.rr-card:has(.rr-bulk-checkbox:checked) .rr-card-info {
+    background-color: rgba(255,255,255,0.7);
+}
+
+/* === List view slug not chopped === */
+.rr-grid.list-view .rr-card-slug .rr-slug-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline;
+}
+
+/* Remove hover transform for list-view cards */
+.rr-grid.list-view .rr-card:hover {
+    transform: none;
+}
+
+/* =============================================
+   MOBILE LANDSCAPE (max-height ~500px)
+   ============================================= */
+@media screen and (max-height: 520px) and (orientation: landscape) {
+    .rr-wrapper {
+        margin: 6px auto;
+    }
+    .rr-header {
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 5vmax;
+    }
+    .rr-logo-icon {
+        width: 40px !important;
+        height: 40px !important;
+        flex-shrink: 0 !important;
+    }
+    .rr-header h1 {
+        font-size: 16px !important;
+    }
+    /* Icon-only header buttons */
+    .header-action-btn .rr-btn-text {
+        display: none !important;
+    }
+    .header-action-btn {
+        padding: 7px 10px !important;
+    }
+    #rr-btn-new .rr-btn-text {
+        display: none !important;
+    }
+    /* 2-column grid in landscape */
+    .rr-grid.card-view {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px;
+    }
+    .rr-card {
+        border-radius: 12px !important;
+    }
+    .rr-card-slug {
+        font-size: 18px !important;
+        padding: 14px 48px 0 14px !important;
+        margin-bottom: 10px !important;
+    }
+    .rr-card-info {
+        margin: 0 14px 12px !important;
+        padding: 8px 12px !important;
+    }
+    .rr-card-footer {
+        padding: 0 14px 12px !important;
+    }
+    .rr-card-actions {
+        padding: 8px 14px !important;
+    }
+    /* List view on mobile: clean 2-row layout */
+    .rr-grid.list-view .rr-card {
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        padding: 10px 12px !important;
+        min-height: auto !important;
+    }
+    /* Checkbox: stays first, left-aligned */
+    .rr-grid.list-view .rr-card-select {
+        flex: 0 0 32px !important;
+        width: 32px !important;
+        min-height: auto !important;
+    }
+    /* Slug: fills remaining first-row space */
+    .rr-grid.list-view .rr-card-slug-wrap {
+        flex: 1 1 auto !important;
+        max-width: none !important;
+        border-right: none !important;
+        padding: 0 4px 0 6px !important;
+        min-width: 0;
+    }
+    /* Hide slug copy icon on mobile to save width */
+    .rr-grid.list-view .rr-slug-copy { display: none !important; }
+    /* Hide URL info column on mobile */
+    .rr-grid.list-view .rr-card-info { display: none !important; }
+    /* Actions: order 1 → stays on first row, right side */
+    .rr-grid.list-view .rr-card-actions-group {
+        order: 1 !important;
+        flex: 0 0 auto !important;
+        border-left: none !important;
+        padding-left: 2px !important;
+        gap: 2px !important;
+    }
+    /* Footer: order 50 + flex 100% → wraps to second row */
+    .rr-grid.list-view .rr-card-footer {
+        order: 50 !important;
+        flex: 0 0 100% !important;
+        padding: 5px 0 0 38px !important;   /* indent aligns under slug text */
+        border: none !important;
+        gap: 8px !important;
+        white-space: nowrap;
+    }
+    /* Smaller action buttons on mobile */
+    .rr-grid.list-view .rr-action-btn {
+        width: 28px !important;
+        height: 28px !important;
+        box-shadow: none !important;
+    }
+    /* Slug font a touch smaller */
+    .rr-grid.list-view .rr-card-slug {
+        font-size: 13px !important;
+    }
+    /* Creator compact */
+    .rr-creator {
+        padding: 14px !important;
+        margin-bottom: 14px !important;
+    }
+    .rr-creator h3 {
+        font-size: 16px !important;
+    }
+    .rr-search-wrap {
+        margin-bottom: 10px !important;
+    }
+    /* Floating bulk bar: icon-only buttons */
+    #rr-bulk-bar .rr-btn-text {
+        display: none !important;
+    }
+    #rr-bulk-bar button {
+        padding: 8px 10px !important;
+        margin-right: 6px !important;
+        gap: 0 !important;
+    }
+    #rr-bulk-bar .rr-bulk-count {
+        font-size: 13px !important;
+        margin-right: 8px !important;
+    }
+}
+
+/* =============================================
+   PHONE PORTRAIT (max-width: 640px)
+   ============================================= */
+@media screen and (max-width: 640px) {
+
+    /* Header: wrap to 2 rows, icon-only buttons */
+    .rr-header {
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 5vmax;
+    }
+    .rr-header h1 {
+        font-size: 16px !important;
+    }
+    .header-action-btn .rr-btn-text {
+        display: none !important;
+    }
+    .header-action-btn {
+        padding: 7px 10px !important;
+        min-width: unset;
+    }
+    #rr-btn-new .rr-btn-text {
+        display: none !important;
+    }
+    #rr-btn-new {
+        padding: 8px 12px !important;
+    }
+    .rr-logo-icon img {
+        width: 44px !important;
+        height: 44px !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* Card grid: 1 column */
+    .rr-grid.card-view {
+        grid-template-columns: 1fr !important;
+        gap: 12px;
+    }
+
+    /* -----------------------------------------------
+       LIST VIEW — Phone Portrait (2-row per item)
+       Row 1: [☐]  /slug-text          [🔗][✏️][🗑️]
+       Row 2: (indent)  ● 301 Redirect  0 HITS
+    ----------------------------------------------- */
+    .rr-grid.list-view .rr-card {
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        padding: 10px 12px !important;
+        min-height: auto !important;
+    }
+
+    /* Checkbox column: 32px fixed */
+    .rr-grid.list-view .rr-card-select {
+        flex: 0 0 32px !important;
+        width: 32px !important;
+        height: 32px !important;
+        min-height: auto !important;
+        align-self: center;
+    }
+    .rr-grid.list-view .rr-card-select .rr-checkbox-style {
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 8px !important;
+    }
+
+    /* Slug: grows to fill remaining first-row space */
+    .rr-grid.list-view .rr-card-slug-wrap {
+        flex: 1 1 auto !important;
+        max-width: none !important;
+        border-right: none !important;
+        padding: 0 4px 0 6px !important;
+        min-width: 0;
+    }
+
+    /* Slug font size */
+    .rr-grid.list-view .rr-card-slug {
+        font-size: 14px !important;
+        font-weight: 700;
+    }
+
+    /* Hide slug copy & URL column on phone */
+    .rr-grid.list-view .rr-slug-copy    { display: none !important; }
+    .rr-grid.list-view .rr-card-info    { display: none !important; }
+
+    /* Action buttons: order:1 → sits on the same first row, right side */
+    .rr-grid.list-view .rr-card-actions-group {
+        order: 1 !important;
+        flex: 0 0 auto !important;
+        border-left: none !important;
+        padding-left: 2px !important;
+        gap: 2px !important;
+    }
+
+    /* Status footer: order:50 + flex:100% forces it to second row */
+    .rr-grid.list-view .rr-card-footer {
+        order: 50 !important;
+        flex: 0 0 100% !important;
+        padding: 4px 0 2px 38px !important;  /* indent aligns under slug text */
+        border: none !important;
+        gap: 8px !important;
+        white-space: nowrap;
+    }
+
+    /* Smaller action buttons on phone */
+    .rr-grid.list-view .rr-action-btn {
+        width: 28px !important;
+        height: 28px !important;
+        box-shadow: none !important;
+    }
+
+    /* Status dot + label */
+    .rr-grid.list-view .rr-status-label {
+        font-size: 12px !important;
+    }
+    .rr-grid.list-view .rr-hits-num {
+        font-size: 12px !important;
+    }
+    .rr-grid.list-view .rr-hits-lbl {
+        font-size: 10px !important;
+    }
+
+    /* Dividers off in list on mobile */
+    .rr-grid.list-view .rr-card-slug-wrap,
+    .rr-grid.list-view .rr-card-info,
+    .rr-grid.list-view .rr-card-footer,
+    .rr-grid.list-view .rr-card-actions-group {
+        border-color: transparent !important;
+    }
+
+    /* Floating bulk bar: icon-only buttons */
+    #rr-bulk-bar .rr-btn-text {
+        display: none !important;
+    }
+    #rr-bulk-bar button {
+        padding: 8px 10px !important;
+        margin-right: 6px !important;
+        gap: 0 !important;
+    }
+    #rr-bulk-bar .rr-bulk-count {
+        font-size: 13px !important;
+        margin-right: 8px !important;
     }
 }

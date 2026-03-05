@@ -5,7 +5,7 @@
 [![WordPress](https://img.shields.io/badge/WordPress-5.6+-blue.svg)](https://wordpress.org/)
 [![PHP](https://img.shields.io/badge/PHP-7.4+-purple.svg)](https://php.net/)
 [![License](https://img.shields.io/badge/License-GPL--2.0+-green.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
-[![Version](https://img.shields.io/badge/Version-1.2.1-orange.svg)](https://github.com/harsh98trivedi/Romeo-Redirect-Manager)
+[![Version](https://img.shields.io/badge/Version-1.3.1-orange.svg)](https://github.com/harsh98trivedi/Romeo-Redirect-Manager)
 [![Rate this plugin](https://img.shields.io/badge/Rate_this_plugin-★★★★★-yellow.svg)](https://wordpress.org/support/plugin/romeo-redirect-manager/reviews/#new-post)
 
 **Romeo Redirect Manager** is a modern, lightweight WordPress plugin designed to make redirect management effortless and beautiful. Say goodbye to clunky tables and outdated interfaces — welcome to a sleek, card-based dashboard that supports the latest SEO standards, including **308 Permanent Redirects**.
@@ -20,7 +20,7 @@
 | 🔗 **Full Standard Support** | Supports **301**, **302**, **307**, and **308** status codes |
 | 🔍 **Instant Search** | Real-time, optimistic search filtering to find redirects instantly |
 | 📝 **Internal Linking** | Intelligent autocomplete for Posts and Pages |
-| 🖱️ **Drag-to-Select** | Bulk select cards by simply clicking and dragging |
+| 🖱️ **Override Mode** | Force the redirect to take precedence over the existing page |
 | 📋 **Quick Copy** | One-click copy buttons for Source and Target URLs |
 | ⚡ **Performance Focused** | Lightweight native JavaScript with zero heavy dependencies |
 | 📊 **Hit Counting** | Track redirect popularity with built-in hit counters |
@@ -33,8 +33,8 @@
 |:---:|:---:|
 | **Dashboard** <br> ![Dashboard](assets/images/screenshot-1.jpg) | **Creator Panel** <br> ![Creator Panel](assets/images/screenshot-2.jpg) |
 | **Bulk Actions** <br> ![Bulk Actions](assets/images/screenshot-3.jpg) | **Import/Export** <br> ![Import/Export](assets/images/screenshot-4.jpg) |
-| **Mobile Responsive** <br> ![Mobile Responsive](assets/images/screenshot-5.jpg) | **Drag-to-Select** <br> ![Drag Selection](assets/images/screenshot-6.png) |
-| **404 Management** <br> ![404 Settings](assets/images/screenshot-7.png) | |
+| **Mobile Responsive** <br> ![Mobile Responsive](assets/images/screenshot-5.jpg) | **Drag-to-Select** <br> ![Drag Selection](assets/images/screenshot-6.jpg) |
+| **404 Management** <br> ![404 Settings](assets/images/screenshot-7.jpg) | |
 
 ---
 
@@ -63,9 +63,9 @@ Don't let visitors hit a dead end. Configure exactly what happens when a 404 err
 
 ### 📥 Download
 
-[![Download](https://img.shields.io/badge/Download-v1.2.1-brightgreen.svg)](https://github.com/harsh98trivedi/Romeo-Redirect-Manager/releases/download/1.2.1/romeo-redirect-manager.zip)
+[![Download](https://img.shields.io/badge/Download-v1.3.1-brightgreen.svg)](https://github.com/harsh98trivedi/Romeo-Redirect-Manager/releases/download/1.3.1/romeo-redirect-manager.zip)
 
-👉 [**Click here to Download**](https://github.com/harsh98trivedi/Romeo-Redirect-Manager/releases/download/1.2.1/romeo-redirect-manager.zip)
+👉 [**Click here to Download**](https://github.com/harsh98trivedi/Romeo-Redirect-Manager/releases/download/1.3.1/romeo-redirect-manager.zip)
 
 ### From WordPress Admin
 1. Download the latest release `.zip` file from the link above

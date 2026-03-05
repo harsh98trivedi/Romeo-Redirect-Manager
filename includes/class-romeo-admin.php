@@ -25,14 +25,24 @@ class Romerema_Admin {
     }
 
     public function add_admin_menu() {
+        $icon_url = plugins_url( 'assets/images/icon.svg', dirname( __FILE__ ) . '/../romeo-redirect-manager.php' );
         add_menu_page(
+            __( 'Romeo Redirects', 'romeo-redirect-manager' ),
+            __( 'Romeo Redirects', 'romeo-redirect-manager' ),
+            'manage_options',
+            'romeo-redirect-manager',
+            array( $this, 'render_admin_page' ),
+            $icon_url,
+            80
+        );
+
+        add_submenu_page(
+            'romeo-redirect-manager',
             __( 'Redirects', 'romeo-redirect-manager' ),
             __( 'Redirects', 'romeo-redirect-manager' ),
             'manage_options',
             'romeo-redirect-manager',
-            array( $this, 'render_admin_page' ),
-            'dashicons-randomize',
-            80
+            array( $this, 'render_admin_page' )
         );
 
         add_submenu_page(
@@ -46,14 +56,17 @@ class Romerema_Admin {
     }
 
     public function enqueue_assets( $hook ) {
-        // Allow main page and 404 page (check for plugin slug in hook)
+        $main_file = dirname( __FILE__ ) . '/../romeo-redirect-manager.php';
+
+        // Load CSS on ALL admin pages so the sidebar icon is styled everywhere.
+        wp_enqueue_style( 'romeo-admin-css', plugins_url( 'assets/css/admin.css', $main_file ), array(), '1.3.1' );
+
+        // Load JS only on plugin pages (heavy, not needed elsewhere).
         if ( strpos( $hook, 'romeo-redirect-manager' ) === false ) {
             return;
         }
 
-        $main_file = dirname( __FILE__ ) . '/../romeo-redirect-manager.php';
-        wp_enqueue_style( 'romeo-admin-css', plugins_url( 'assets/css/admin.css', $main_file ), array(), '1.2.1' );
-        wp_enqueue_script( 'romeo-admin-js', plugins_url( 'assets/js/admin.js', $main_file ), array(), '1.2.1', true );
+        wp_enqueue_script( 'romeo-admin-js', plugins_url( 'assets/js/admin.js', $main_file ), array(), '1.3.1', true );
 
         wp_localize_script( 'romeo-admin-js', 'romerema_vars', array(
             'nonce' => wp_create_nonce( 'romerema_save_nonce' ),
@@ -76,10 +89,10 @@ class Romerema_Admin {
             <div class="rr-header">
                 <div class="rr-brand">
                     <div class="rr-logo-icon">
-                        <img src="<?php echo esc_url( $logo_url ); ?>" alt="Redirects">
+                        <img src="<?php echo esc_url( $logo_url ); ?>" alt="Romeo Redirects Manager" style="width:48px;height:48px;">
                     </div>
                     <div>
-                        <h1>Redirects</h1>
+                        <h1>Redirection Romeo</h1>
                         <small>by <a href="https://harsh98trivedi.github.io/" target="_blank" style="color:#f0405f; text-decoration:none; font-weight:600;">Harsh Trivedi</a></small>
                     </div>
                 </div>
@@ -87,7 +100,10 @@ class Romerema_Admin {
                 <div style="display: flex; gap: 8px;">
                     <input type="file" id="rr-import-file" accept=".json" style="display:none;" />
                     <a href="https://wordpress.org/support/plugin/romeo-redirect-manager/reviews/#new-post" target="_blank" rel="noopener noreferrer" class="rr-btn rr-btn-secondary header-action-btn" style="text-decoration:none; display:inline-flex; align-items:center;">
-                        <span class="dashicons dashicons-star-filled" style="font-size:18px; width:18px; height:18px; color:#fbbf24;"></span> <span class="rr-btn-text"><?php esc_html_e( 'Rate', 'romeo-redirect-manager' ); ?></span>
+                        <span class="dashicons dashicons-star-filled" style="font-size:16px; width:16px; height:16px; color:#fbbf24;"></span> <span class="rr-btn-text"><?php esc_html_e( 'Rate', 'romeo-redirect-manager' ); ?></span>
+                    </a>
+                    <a href="https://buymeacoffee.com/harsh98trivedi" target="_blank" rel="noopener noreferrer" class="rr-btn rr-btn-secondary header-action-btn" style="text-decoration:none; display:inline-flex; align-items:center;">
+                        <span class="dashicons dashicons-heart" style="font-size:18px; width:18px; height:18px; color:#ff4d6d;"></span> <span class="rr-btn-text"><?php esc_html_e( 'Donate', 'romeo-redirect-manager' ); ?></span>
                     </a>
                     <button id="rr-btn-import" class="rr-btn rr-btn-secondary header-action-btn">
                         <span class="dashicons dashicons-upload" style="font-size:18px; width:18px; height:18px;"></span> <span class="rr-btn-text"><?php esc_html_e( 'Import', 'romeo-redirect-manager' ); ?></span>
@@ -95,7 +111,7 @@ class Romerema_Admin {
                     <button id="rr-btn-export" class="rr-btn rr-btn-secondary header-action-btn">
                         <span class="dashicons dashicons-download" style="font-size:18px; width:18px; height:18px;"></span> <span class="rr-btn-text"><?php esc_html_e( 'Export', 'romeo-redirect-manager' ); ?></span>
                     </button>
-                    <button id="rr-btn-new" class="rr-btn rr-btn-primary">
+                    <button id="rr-btn-new" class="rr-btn rr-btn-outline">
                         <span class="dashicons dashicons-plus-alt2" style="font-size:18px; width:18px; height:18px;"></span> <span class="rr-btn-text"><?php esc_html_e( 'Create New Redirect', 'romeo-redirect-manager' ); ?></span>
                     </button>
                 </div>
@@ -185,21 +201,40 @@ class Romerema_Admin {
             </div>
 
             <!-- List View -->
-            <div data-view="list">
+            <div data-view="card">
                 
                 <div class="rr-search-container">
                     <span class="dashicons dashicons-search rr-search-icon"></span>
                     <input type="text" id="rr-card-search" class="rr-search-input" placeholder="<?php esc_attr_e( 'Type to search redirects...', 'romeo-redirect-manager' ); ?>">
                 </div>
 
-                <div class="rr-grid" id="rr-card-grid">
-                    <?php if ( empty( $redirects ) ) : ?>
-                        <div class="rr-empty">
-                            <span class="dashicons dashicons-randomize" style="font-size:48px; width:48px; height:48px; margin-bottom:16px; opacity:0.5;"></span>
-                            <h3><?php esc_html_e( 'No redirects found', 'romeo-redirect-manager' ); ?></h3>
-                            <p><?php esc_html_e( 'Create your first redirect to get started.', 'romeo-redirect-manager' ); ?></p>
-                        </div>
-                    <?php else : ?>
+                <div class="rr-filters" style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; justify-content: center;">
+                    <button class="rr-filter-btn active" data-filter="all">All</button>
+                    <button class="rr-filter-btn" data-filter="301">301</button>
+                    <button class="rr-filter-btn" data-filter="302">302</button>
+                    <button class="rr-filter-btn" data-filter="307">307</button>
+                    <button class="rr-filter-btn" data-filter="308">308</button>
+                </div>
+
+                <div class="rr-view-toggles" style="display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 20px;">
+                    <button class="rr-view-btn active" data-view="card" title="Card View"><span class="dashicons dashicons-grid-view"></span></button>
+                    <button class="rr-view-btn" data-view="list" title="List View"><span class="dashicons dashicons-list-view"></span></button>
+                </div>
+
+                <div id="rr-report-summary"></div>
+
+                <div class="rr-grid card-view" id="rr-card-grid">
+                    <?php 
+                    // This div is used for both initial empty state and filtering
+                    $show_initial_empty = empty( $redirects );
+                    ?>
+                    <div id="rr-no-results" class="rr-empty-state <?php echo $show_initial_empty ? '' : 'hidden'; ?>">
+                        <span class="dashicons dashicons-search"></span>
+                        <h3><?php esc_html_e( 'No redirects found', 'romeo-redirect-manager' ); ?></h3>
+                        <p><?php esc_html_e( 'Try a different filter or create your first one to get started.', 'romeo-redirect-manager' ); ?></p>
+                    </div>
+
+                    <?php if ( ! empty( $redirects ) ) : ?>
                         <?php foreach ( $redirects as $r ) : 
                             $data_attr = $r;
                             $target_display = $r['target'];
@@ -223,7 +258,7 @@ class Romerema_Admin {
                             
                             $full_source = home_url( '/' . $r['slug'] );
                         ?>
-                            <div class="rr-card" id="card-<?php echo esc_attr( $r['id'] ); ?>" data-slug="<?php echo esc_attr( strtolower($r['slug'] ) ); ?>" data-target="<?php echo esc_attr( strtolower( $target_display ) ); ?>">
+                            <div class="rr-card" id="card-<?php echo esc_attr( $r['id'] ); ?>" data-slug="<?php echo esc_attr( strtolower($r['slug'] ) ); ?>" data-target="<?php echo esc_attr( strtolower( $target_display ) ); ?>" data-code="<?php echo esc_attr( $r['code'] ); ?>" style="position:relative;">
                                 
                                 <?php 
                                     $is_override = isset($r['override']) && ( $r['override'] === true || $r['override'] === '1' || $r['override'] === 'true' );
@@ -238,87 +273,83 @@ class Romerema_Admin {
                                     $conflicts = get_posts($conflict_args);
                                     $has_conflict = !empty($conflicts);
                                 ?>
-                                
-                                <div class="rr-card-actions">
-                                    <label class="rr-checkbox-wrapper">
-                                        <input type="checkbox" class="rr-bulk-checkbox" value="<?php echo esc_attr( $r['id'] ); ?>">
-                                        <span class="rr-checkbox-style"></span>
-                                    </label>
 
-                                    <div style="margin-right:auto;"></div>
-                                    
-
-                                    
-                                    <a href="<?php echo esc_url( $full_source ); ?>" target="_blank" class="rr-action-btn" title="Open Link">
-                                        <span class="dashicons dashicons-external"></span>
-                                    </a>
-                                    <button 
-                                        class="rr-action-btn rr-edit-btn" 
-                                        title="Edit"
-                                        data-id="<?php echo esc_attr( $r['id'] ); ?>"
-                                        data-slug="<?php echo esc_attr( $r['slug'] ); ?>"
-                                        data-type="<?php echo esc_attr( $r['type'] ); ?>"
-                                        data-target="<?php echo esc_attr( $r['target'] ); ?>"
-                                        data-code="<?php echo esc_attr( $r['code'] ); ?>"
-                                        data-override="<?php echo isset($r['override']) && $r['override'] ? '1' : '0'; ?>"
-                                        <?php if( 'post' === $r['type'] && isset($data_attr['target_title']) ) : ?>
-                                        data-target-title="<?php echo esc_attr( $data_attr['target_title'] ); ?>"
-                                        <?php endif; ?>
-                                    >
-                                        <span class="dashicons dashicons-edit"></span>
-                                    </button>
-                                    <button onclick="rrDelete('<?php echo esc_attr( $r['id'] ); ?>')" class="rr-action-btn" title="Delete" style="color:#ef4444;">
-                                        <span class="dashicons dashicons-trash"></span>
-                                    </button>
-                                </div>
-
-                                <div class="rr-card-slug" title="<?php echo esc_attr( $r['slug'] ); ?>">
-                                    <span class="slash">/</span><?php echo esc_html( $r['slug'] ); ?>
-                                    <button class="rr-copy-btn" data-copy="<?php echo esc_url( $full_source ); ?>" title="<?php esc_attr_e('Copy Source URL', 'romeo-redirect-manager'); ?>">
+                                <!-- Slug row: /slug text + inline copy button -->
+                                <div class="rr-card-slug-wrap">
+                                    <div class="rr-card-slug" title="/<?php echo esc_attr( $r['slug'] ); ?>" data-copy="<?php echo esc_url( $full_source ); ?>">
+                                        <span class="slash">/</span><span class="rr-slug-text"><?php echo esc_html( $r['slug'] ); ?></span>
+                                    </div>
+                                    <button class="rr-slug-copy rr-copy-btn" data-copy="<?php echo esc_url( $full_source ); ?>" title="<?php esc_attr_e('Copy source URL', 'romeo-redirect-manager'); ?>">
                                         <span class="dashicons dashicons-admin-page"></span>
                                     </button>
                                 </div>
 
+                                <!-- Info: target URL + copy -->
                                 <div class="rr-card-info">
-                                    <span class="rr-info-label"><?php echo esc_html( $target_label ); ?></span>
-                                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:4px;">
-                                        <span class="rr-info-value" title="<?php echo esc_attr( $full_target ); ?>">
-                                            <?php echo esc_html( $target_display ); ?>
-                                        </span>
-                                        <button class="rr-copy-btn" data-copy="<?php echo esc_url( $full_target ); ?>" title="<?php esc_attr_e('Copy Target URL', 'romeo-redirect-manager'); ?>">
-                                            <span class="dashicons dashicons-admin-page"></span>
+                                    <div class="rr-card-info-inner">
+                                        <span class="rr-info-label"><?php echo esc_html( $target_label ); ?></span>
+                                        <span class="rr-info-value" title="<?php echo esc_attr( $full_target ); ?>" data-copy="<?php echo esc_url( $full_target ); ?>"><?php echo esc_html( $target_display ); ?></span>
+                                    </div>
+                                    <button class="rr-inline-copy rr-copy-btn" data-copy="<?php echo esc_url( $full_target ); ?>" title="<?php esc_attr_e('Copy target URL', 'romeo-redirect-manager'); ?>">
+                                        <span class="dashicons dashicons-admin-page"></span>
+                                    </button>
+                                </div>
+
+                                <!-- Footer: status + hits -->
+                                <div class="rr-card-footer">
+                                    <div class="rr-status-block">
+                                        <div class="rr-status-dot code-<?php echo esc_attr( $r['code'] ); ?>"></div>
+                                        <span class="rr-status-label"><?php echo esc_attr( $r['code'] ); ?> Redirect</span>
+                                    </div>
+                                    <div class="rr-hits-badge">
+                                        <span class="rr-hits-num"><?php echo isset($r['hits']) ? esc_html( number_format_i18n( $r['hits'] ) ) : '0'; ?></span>
+                                        <span class="rr-hits-lbl">HITS</span>
+                                    </div>
+                                    <?php if( $has_conflict && $is_override ) : ?>
+                                    <div class="rr-override-indicator">
+                                        <div class="rr-override-dot"></div>
+                                        <span>Overridden</span>
+                                    </div>
+                                    <?php endif; ?>
+                                    <?php if( isset( $r['date'] ) ) : ?>
+                                    <div class="rr-date-badge"><?php echo esc_html( date_i18n( get_option('date_format'), strtotime($r['date']) ) ); ?></div>
+                                    <?php endif; ?>
+                                </div>
+
+                                <!-- Bottom bar: [☐ checkbox LEFT] ......... [open | edit | delete RIGHT] -->
+                                <div class="rr-card-bottom">
+                                    <label class="rr-checkbox-wrapper rr-card-select" title="Select">
+                                        <input type="checkbox" class="rr-bulk-checkbox" value="<?php echo esc_attr( $r['id'] ); ?>">
+                                        <span class="rr-checkbox-style"></span>
+                                    </label>
+                                    <div class="rr-card-actions-group">
+                                        <a href="<?php echo esc_url( $full_source ); ?>" target="_blank" class="rr-action-btn" title="Open source URL">
+                                            <span class="dashicons dashicons-external"></span>
+                                        </a>
+                                        <button 
+                                            class="rr-action-btn rr-edit-btn" 
+                                            title="Edit"
+                                            data-id="<?php echo esc_attr( $r['id'] ); ?>"
+                                            data-slug="<?php echo esc_attr( $r['slug'] ); ?>"
+                                            data-type="<?php echo esc_attr( $r['type'] ); ?>"
+                                            data-target="<?php echo esc_attr( $r['target'] ); ?>"
+                                            data-code="<?php echo esc_attr( $r['code'] ); ?>"
+                                            data-override="<?php echo isset($r['override']) && $r['override'] ? '1' : '0'; ?>"
+                                            <?php if( 'post' === $r['type'] && isset($data_attr['target_title']) ) : ?>
+                                            data-target-title="<?php echo esc_attr( $data_attr['target_title'] ); ?>"
+                                            <?php endif; ?>
+                                        >
+                                            <span class="dashicons dashicons-edit"></span>
+                                        </button>
+                                        <button onclick="rrDelete('<?php echo esc_attr( $r['id'] ); ?>')" class="rr-action-btn rr-delete-action-btn" title="Delete">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
                                         </button>
                                     </div>
                                 </div>
 
-                                <div class="rr-card-footer" style="padding: 0 24px 18px 24px;">
-                                    <!-- Status and Hits Row -->
-                                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px;">
-                                        <!-- Status -->
-                                        <div class="rr-status-block" style="display: flex; align-items: center; gap: 8px;">
-                                            <div class="rr-status-dot code-<?php echo esc_attr( $r['code'] ); ?>" style="width: 6px; height: 6px; flex-shrink: 0;"></div>
-                                            <span style="font-weight: 600; color: #475569; font-size: 13px;">
-                                                <?php echo esc_attr( $r['code'] ); ?> Redirect
-                                            </span>
-                                        </div>
 
-                                        <!-- Hits -->
-                                        <div class="rr-hits-badge" style="display: flex; align-items: center; gap: 4px;">
-                                            <span style="font-size: 14px; font-weight: 700; color: #0f172a; line-height: 1;">
-                                                <?php echo isset($r['hits']) ? esc_html( number_format_i18n( $r['hits'] ) ) : '0'; ?>
-                                            </span>
-                                            <span style="font-size: 10px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">HITS</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Override Indicator -->
-                                    <?php if( $has_conflict && $is_override ) : ?>
-                                        <div class="rr-override-indicator" style="display: inline-flex; align-items: center; gap: 8px;">
-                                            <div style="width: 6px; height: 6px; border-radius: 50%; background: #f97316; flex-shrink: 0;"></div>
-                                            <span style="font-size: 13px; font-weight: 600; color: #ea580c;">Overridden</span>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
 
                             </div>
                         <?php endforeach; ?>
@@ -327,25 +358,106 @@ class Romerema_Admin {
                 <!-- Import Modal -->
             <div id="rr-import-modal" class="rr-modal-overlay hidden" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9999; display:flex; align-items:center; justify-content:center;">
                 <div class="rr-creator" style="width:400px; margin:0; max-width:90%; position:relative;">
-                    <h3 style="margin-bottom:12px;">Import Redirects</h3>
-                    <p style="color:#64748b; margin-bottom:16px;">How should we handle existing redirects?</p>
+                    <h3 style="margin-bottom:8px;">Import Redirects</h3>
+                    <p style="color:#64748b; margin-bottom:16px; font-size:13px;">Upload a JSON file exported from Romeo Redirects.</p>
                     
-                    <div style="margin-bottom: 24px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                        <label style="font-weight:500; display:flex; align-items:center; gap:8px; cursor:pointer; font-size: 13px; color: #334155;">
-                            <input type="checkbox" id="rr-import-update" checked style="accent-color: var(--rr-primary);"> 
-                            Update existing redirects with same slug
-                        </label>
+                    <!-- No conflicts section -->
+                    <div id="rr-import-no-conflict-section">
+                        <div style="display:flex; align-items:center; gap:10px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:14px 16px; margin-bottom:20px;">
+                            <span class="dashicons dashicons-yes-alt" style="color:#16a34a; font-size:20px; width:20px; height:20px; flex-shrink:0;"></span>
+                            <span style="font-size:13px; color:#15803d; font-weight:600;">No conflicts detected. All redirects will be added.</span>
+                        </div>
+                        <button id="rr-btn-merge" class="rr-btn rr-btn-primary" style="width:100%; justify-content:center;">
+                            <span class="dashicons dashicons-upload" style="font-size:16px; width:16px; height:16px;"></span> Import All
+                        </button>
                     </div>
 
-                    <div style="display:flex; gap:12px;">
-                        <button id="rr-btn-merge" class="rr-btn rr-btn-primary" style="flex:1; justify-content:center;">Merge</button>
-                        <button id="rr-btn-overwrite" class="rr-btn rr-btn-secondary" style="flex:1; justify-content:center; color:#ef4444; border-color:#ef4444;">Overwrite</button>
+                    <!-- Conflicts detected section -->
+                    <div id="rr-import-conflict-section" class="hidden">
+                        <div style="display:flex; align-items:center; gap:10px; background:#FFF5F5; border:1px solid #fecaca; border-radius:10px; padding:14px 16px; margin-bottom:16px;">
+                            <span class="dashicons dashicons-warning" style="color:var(--rr-primary); font-size:20px; width:20px; height:20px; flex-shrink:0;"></span>
+                            <div>
+                                <span style="font-size:13px; color:var(--rr-primary); font-weight:700;"><span id="rr-import-conflict-count">0</span> conflict(s) found</span>
+                                <p style="margin:2px 0 0; font-size:12px; color:#64748b;">Some slugs already exist. Choose how to handle them.</p>
+                            </div>
+                        </div>
+                        <div style="margin-bottom:16px; background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0;">
+                            <label style="font-weight:500; display:flex; align-items:center; gap:8px; cursor:pointer; font-size:13px; color:#334155;">
+                                <input type="checkbox" id="rr-import-update" checked style="accent-color:var(--rr-primary);"> 
+                                Update existing redirects with same slug
+                            </label>
+                        </div>
+                        <div style="display:flex; gap:10px;">
+                            <button id="rr-btn-merge" class="rr-btn rr-btn-primary" style="flex:1; justify-content:center;">Merge</button>
+                            <button id="rr-btn-overwrite" class="rr-btn rr-btn-secondary" style="flex:1; justify-content:center; color:#ef4444; border-color:#ef4444;">Overwrite All</button>
+                        </div>
                     </div>
+
                     <button id="rr-btn-close-import" style="position:absolute; top:28px; right:20px; background:none; border:none; cursor:pointer; padding:4px;">
                         <span class="dashicons dashicons-no-alt" style="color:#94a3b8;"></span>
                     </button>
                 </div>
             </div>
+
+            <!-- Import Logs Modal -->
+            <div id="rr-import-logs-modal" class="rr-modal-overlay hidden" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9999; display:flex; align-items:center; justify-content:center;">
+                <div class="rr-creator" style="width:600px; margin:0; max-width:90%; position:relative; max-height:80vh; display:flex; flex-direction:column;">
+                    <h3 style="margin-bottom:12px;">Import Status</h3>
+                    <div id="rr-import-status-text" style="margin-bottom: 16px; font-weight: 600; color: #334155;"></div>
+                    <div id="rr-import-logs-content" style="flex:1; overflow-y:auto; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-family: monospace; font-size: 12px; white-space: pre-wrap; margin-bottom: 24px;"></div>
+                    <button id="rr-btn-close-logs" class="rr-btn rr-btn-primary" style="align-self: flex-end;">Close</button>
+                    <button id="rr-btn-close-logs-icon" style="position:absolute; top:28px; right:20px; background:none; border:none; cursor:pointer; padding:4px;">
+                        <span class="dashicons dashicons-no-alt" style="color:#94a3b8;"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="rr-status-info" style="margin-top: 50px; padding: 32px; background: white; border-radius: 16px; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #f1f5f9;">
+                <h4 style="margin-top: 0; margin-bottom: 24px; font-weight: 800; color: #1e293b; font-size: 16px; text-transform: uppercase; letter-spacing: 0.5px;">Understanding Redirect Status Codes</h4>
+                <div class="rr-status-list" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div class="rr-status-item" data-code="301">
+                        <div class="rr-status-item-header">
+                            <div class="rr-code-dot code-301"></div>
+                            <span class="rr-code-num">301</span>
+                            <span class="rr-code-desc">Moved Permanently</span>
+                        </div>
+                        <div class="rr-status-item-body">
+                            The requested resource has been assigned a new permanent URI. Best for SEO as search engines update their index to the new URL.
+                        </div>
+                    </div>
+                    <div class="rr-status-item" data-code="302">
+                        <div class="rr-status-item-header">
+                            <div class="rr-code-dot code-302"></div>
+                            <span class="rr-code-num">302</span>
+                            <span class="rr-code-desc">Found (Temporary)</span>
+                        </div>
+                        <div class="rr-status-item-body">
+                            The resource is temporarily located at a different URI. Used when you want search engines to keep the original URL indexed.
+                        </div>
+                    </div>
+                    <div class="rr-status-item" data-code="307">
+                        <div class="rr-status-item-header">
+                            <div class="rr-code-dot code-307"></div>
+                            <span class="rr-code-num">307</span>
+                            <span class="rr-code-desc">Temporary Redirect</span>
+                        </div>
+                        <div class="rr-status-item-body">
+                            Similar to 302, but guarantees the HTTP method (e.g., POST) and body remain unchanged during the redirect process.
+                        </div>
+                    </div>
+                    <div class="rr-status-item" data-code="308">
+                        <div class="rr-status-item-header">
+                            <div class="rr-code-dot code-308"></div>
+                            <span class="rr-code-num">308</span>
+                            <span class="rr-code-desc">Permanent Redirect</span>
+                        </div>
+                        <div class="rr-status-item-body">
+                            The permanent version of 307. It ensures the HTTP method doesn't change, while signaling a permanent move to search engines.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
             <!-- Bulk Actions Floating Bar -->
             <div id="rr-bulk-bar" class="rr-bulk-bar hidden">
@@ -356,8 +468,10 @@ class Romerema_Admin {
                 <button id="rr-bulk-clear-btn" class="rr-btn-clear-bulk">
                     <span class="dashicons dashicons-no-alt"></span> <span class="rr-btn-text">Clear Selection</span>
                 </button>
-                <button id="rr-bulk-delete-btn" class="rr-btn rr-btn-delete-bulk">
-                    <span class="dashicons dashicons-trash"></span> <span class="rr-btn-text">Delete Selection</span>
+                <button id="rr-bulk-delete-btn" class="rr-btn rr-btn-delete-bulk" style="background:#FFEBEE; color:var(--rr-primary); border-color:var(--rr-primary); border-width: 1px; border-style: solid; box-shadow:none; gap:6px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg> <span class="rr-btn-text">Delete Selection</span>
                 </button>
             </div>
         </div>
@@ -507,7 +621,7 @@ class Romerema_Admin {
             if ( ! $updated ) {
                 // ID provided but not found? Treat as new or error? 
                 // Let's safe fallback to new
-                $id = uniqid(); 
+            $id = uniqid(); 
                 $redirects[] = array(
                     'id'     => $id,
                     'slug'   => $slug,
@@ -515,7 +629,8 @@ class Romerema_Admin {
                     'target' => $target,
                     'code'   => $code,
                     'override' => $override,
-                    'hits'   => 0
+                    'hits'   => 0,
+                    'date'   => current_time('mysql')
                 );
             }
         } else {
@@ -528,7 +643,8 @@ class Romerema_Admin {
                 'target' => $target,
                 'code'   => $code,
                 'override' => $override,
-                'hits'   => 0
+                'hits'   => 0,
+                'date'   => current_time('mysql')
             );
         }
 
@@ -664,19 +780,16 @@ class Romerema_Admin {
         }
 
         $current_redirects = get_option( $this->option_key, array() );
+        
+        $success_count = 0;
+        $failed_count = 0;
+        $logs = array();
 
         if ( $mode === 'overwrite' ) {
             $redirects = $valid_items;
+            $success_count = count($valid_items);
+            $logs[] = "Overwrote existing redirects with " . count($valid_items) . " items.";
         } else {
-            // Merge: Add new ones, but avoid duplicate slugs? 
-            // User requirement: "Merge or Overwrite".
-            // Merge usually means append. Duplicate slugs are tricky.
-            // Let's append, but if slug exists, maybe update it? Or skip?
-            // Simple approach: Append all, let user duplicate-check later? 
-            // Better: Check for SLUG collisions. If collision, update existing? Or skip?
-            // "Merge" usually implies "Add missing". 
-            // Let's go with: Update existing slugs, add new ones.
-            
             $redirects = $current_redirects;
             foreach ( $valid_items as $new_item ) {
                 $found = false;
@@ -684,30 +797,41 @@ class Romerema_Admin {
                     if ( $existing['slug'] === $new_item['slug'] ) {
                         // MERGE CONFLICT: Slug exists
                         if ( $update_existing ) {
-                            // Merge/Update the existing one with import data
-                            // Preserve the ID of the existing item
                             $new_item['id'] = $existing['id'];
-                            
-                            // Preserve hits if the imported item has 0 hits (which is standard from our export)
                             if ( empty($new_item['hits']) ) {
                                 $new_item['hits'] = $existing['hits'];
                             }
-
+                            if ( !isset($new_item['date']) ) {
+                                $new_item['date'] = isset($existing['date']) ? $existing['date'] : current_time('mysql');
+                            }
                             $existing = $new_item; 
+                            $success_count++;
+                            $logs[] = "Updated existing redirect for slug: " . $new_item['slug'];
+                        } else {
+                            $failed_count++;
+                            $logs[] = "Skipped duplicate slug (no update): " . $new_item['slug'];
                         }
-                        // If not updating, we just skip it (preserve existing)
                         $found = true;
                         break;
                     }
                 }
                 if ( ! $found ) {
+                    if ( !isset($new_item['date']) ) {
+                        $new_item['date'] = current_time('mysql');
+                    }
                     $redirects[] = $new_item;
+                    $success_count++;
+                    $logs[] = "Added new redirect for slug: " . $new_item['slug'];
                 }
             }
         }
 
         update_option( $this->option_key, $redirects );
-        wp_send_json_success( count( $valid_items ) );
+        wp_send_json_success( array(
+            'success_count' => $success_count,
+            'failed_count' => $failed_count,
+            'logs' => $logs
+        ) );
     }
 
     public function ajax_check_conflict() {

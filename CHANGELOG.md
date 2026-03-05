@@ -1,12 +1,31 @@
 # Changelog
 
+## 1.3.1 - 2026-03-05
+### 🎭 The "App-Grade" UX/UI Overhaul
+
+This major release transforms the Redirects dashboard into a truly high-end application experience with custom components and refined aesthetics.
+
+#### ✨ New Features
+- **Custom-Engineered Select Menus**: Replaced generic browser dropdowns with a high-end, custom selection component featuring smooth "pop" transitions, elevated floating menus, and a premium 14px radius.
+- **Unified Field Units**: Form groups (like Source Slug) are now treated as single cohesive interactive units for a cleaner, professional "dashboard" feel.
+- **Sophisticated Dark Theme**: Updated primary action buttons (Save Redirect, Save 404 Settings) and segmented controls to a sleek, modern dark tone (#151515).
+
+#### 🛠 Improvements
+- **Refined Icon States**: Card actions (Edit, Copy, Open) now feature a sophisticated dark hover state while preserving the distinctive red for Delete.
+- **Mobile-Specific Luxury**:
+  - **Auto-Zoom Prevention**: Inputs now use 16px fonts on mobile to prevent intrusive browser zooming.
+  - **Enhanced Touch Targets**: All interactive elements resized and realigned for a perfect handheld experience.
+- **Modernized Segmented Controls**: Sleek, iOS-inspired dark segmented controls for all settings toggles.
+- **Fluid Transitions**: Added micro-animations to chevrons, menus, and focus states for enhanced user feedback.
+- **Performance & Cleanup**: Consolidated CSS and optimized the custom select system for near-zero impact on load times.
+
 ## 1.2.1 - 2026-01-30
 ### 🎨 Major UX/UI Refinements & Features
 
 This release focuses on usability, sorting visibility, and "Quality of Life" improvements requested by power users.
 
 #### ✨ New Features
-- **Drag-to-Select**: Select multiple redirects instantly by clicking and dragging across the grid.
+- **Override Mode**: Force the redirect to take precedence over the existing page.
 - **Copy Actions**: Added one-click copy buttons for both Source Slugs and Target URLs on every card.
 - **Improved 404 Settings**:
   - Replaced search input with a clear dropdown for Page selection.

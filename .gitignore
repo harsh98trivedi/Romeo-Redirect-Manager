@@ -6,6 +6,10 @@ Thumbs.db
 # Editor/IDE
 .vscode/
 .idea/
+.agents/
+.claude/
+.antigravity/
+skills-lock.json
 *.sublime-project
 *.sublime-workspace
 
