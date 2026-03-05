@@ -33,7 +33,7 @@
 |:---:|:---:|
 | **Dashboard** <br> ![Dashboard](assets/images/screenshot-1.jpg) | **Creator Panel** <br> ![Creator Panel](assets/images/screenshot-2.jpg) |
 | **Bulk Actions** <br> ![Bulk Actions](assets/images/screenshot-3.jpg) | **Import/Export** <br> ![Import/Export](assets/images/screenshot-4.jpg) |
-| **Mobile Responsive** <br> ![Mobile Responsive](assets/images/screenshot-5.jpg) | **Drag-to-Select** <br> ![Drag Selection](assets/images/screenshot-6.jpg) |
+| **Mobile Responsive** <br> ![Mobile Responsive](assets/images/screenshot-5.jpg) | **Override Mode** <br> ![Override Mode](assets/images/screenshot-6.jpg) |
 | **404 Management** <br> ![404 Settings](assets/images/screenshot-7.jpg) | |
 
 ---
