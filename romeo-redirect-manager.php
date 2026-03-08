@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Romeo Redirect Manager
  * Description: A modern, lightweight redirect manager. Redirect slugs to external URLs or internal posts with style.
- * Version:     1.3.1
+ * Version:     1.4.0
  * Author:      Harsh Trivedi
  * Author URI:  https://harsh98trivedi.github.io/
  * Text Domain: romeo-redirect-manager

@@ -11,6 +11,7 @@ class Romerema_Admin {
     public function __construct() {
         add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+        add_action( 'wp_dashboard_setup', array( $this, 'register_dashboard_widget' ) );
         
         // AJAX
         add_action( 'wp_ajax_romerema_save_redirect', array( $this, 'ajax_save_redirect' ) );
@@ -22,6 +23,7 @@ class Romerema_Admin {
         add_action( 'wp_ajax_romerema_check_conflict', array( $this, 'ajax_check_conflict' ) );
         add_action( 'wp_ajax_romerema_save_404', array( $this, 'ajax_save_404' ) );
         add_action( 'wp_ajax_romerema_toggle_override', array( $this, 'ajax_toggle_override' ) );
+        add_action( 'wp_ajax_romerema_toggle_404',     array( $this, 'ajax_toggle_404_enabled' ) );
     }
 
     public function add_admin_menu() {
@@ -59,14 +61,14 @@ class Romerema_Admin {
         $main_file = dirname( __FILE__ ) . '/../romeo-redirect-manager.php';
 
         // Load CSS on ALL admin pages so the sidebar icon is styled everywhere.
-        wp_enqueue_style( 'romeo-admin-css', plugins_url( 'assets/css/admin.css', $main_file ), array(), '1.3.1' );
+        wp_enqueue_style( 'romeo-admin-css', plugins_url( 'assets/css/admin.css', $main_file ), array(), '1.4.0' );
 
         // Load JS only on plugin pages (heavy, not needed elsewhere).
         if ( strpos( $hook, 'romeo-redirect-manager' ) === false ) {
             return;
         }
 
-        wp_enqueue_script( 'romeo-admin-js', plugins_url( 'assets/js/admin.js', $main_file ), array(), '1.3.1', true );
+        wp_enqueue_script( 'romeo-admin-js', plugins_url( 'assets/js/admin.js', $main_file ), array(), '1.4.0', true );
 
         wp_localize_script( 'romeo-admin-js', 'romerema_vars', array(
             'nonce' => wp_create_nonce( 'romerema_save_nonce' ),
@@ -74,7 +76,8 @@ class Romerema_Admin {
             'import_nonce' => wp_create_nonce( 'romerema_import_nonce' ),
             'export_nonce' => wp_create_nonce( 'romerema_export_nonce' ),
             'check_nonce'  => wp_create_nonce( 'romerema_check_nonce' ),
-            'save_404_nonce' => wp_create_nonce( 'romerema_save_404_nonce' )
+            'save_404_nonce'   => wp_create_nonce( 'romerema_save_404_nonce' ),
+            'toggle_404_nonce' => wp_create_nonce( 'romerema_toggle_404_nonce' )
         ));
     }
 
@@ -102,7 +105,7 @@ class Romerema_Admin {
                     <a href="https://wordpress.org/support/plugin/romeo-redirect-manager/reviews/#new-post" target="_blank" rel="noopener noreferrer" class="rr-btn rr-btn-secondary header-action-btn" style="text-decoration:none; display:inline-flex; align-items:center;">
                         <span class="dashicons dashicons-star-filled" style="font-size:16px; width:16px; height:16px; color:#fbbf24;"></span> <span class="rr-btn-text"><?php esc_html_e( 'Rate', 'romeo-redirect-manager' ); ?></span>
                     </a>
-                    <a href="https://buymeacoffee.com/harsh98trivedi" target="_blank" rel="noopener noreferrer" class="rr-btn rr-btn-secondary header-action-btn" style="text-decoration:none; display:inline-flex; align-items:center;">
+                    <a href="https://buymeacoffee.com/harshtrivedi" target="_blank" rel="noopener noreferrer" class="rr-btn rr-btn-secondary header-action-btn" style="text-decoration:none; display:inline-flex; align-items:center;">
                         <span class="dashicons dashicons-heart" style="font-size:18px; width:18px; height:18px; color:#ff4d6d;"></span> <span class="rr-btn-text"><?php esc_html_e( 'Donate', 'romeo-redirect-manager' ); ?></span>
                     </a>
                     <button id="rr-btn-import" class="rr-btn rr-btn-secondary header-action-btn">
@@ -216,7 +219,17 @@ class Romerema_Admin {
                     <button class="rr-filter-btn" data-filter="308">308</button>
                 </div>
 
-                <div class="rr-view-toggles" style="display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 20px;">
+                <div class="rr-view-toggles" style="display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 20px; align-items: center;">
+                    <div class="rr-sort-wrapper">
+                        <select id="rr-sort-select" class="rr-input" style="width: 100%; height: 38px; margin: 0; font-size: 13px;">
+                            <option value="date-desc"><?php esc_html_e( 'Newest First', 'romeo-redirect-manager' ); ?></option>
+                            <option value="name-asc"><?php esc_html_e( 'Name (A-Z)', 'romeo-redirect-manager' ); ?></option>
+                            <option value="hits-desc"><?php esc_html_e( 'Most Hits', 'romeo-redirect-manager' ); ?></option>
+                            <option value="type-page"><?php esc_html_e( 'Internal Pages First', 'romeo-redirect-manager' ); ?></option>
+                            <option value="type-post"><?php esc_html_e( 'Internal Posts First', 'romeo-redirect-manager' ); ?></option>
+                            <option value="type-url"><?php esc_html_e( 'External Sites First', 'romeo-redirect-manager' ); ?></option>
+                        </select>
+                    </div>
                     <button class="rr-view-btn active" data-view="card" title="Card View"><span class="dashicons dashicons-grid-view"></span></button>
                     <button class="rr-view-btn" data-view="list" title="List View"><span class="dashicons dashicons-list-view"></span></button>
                 </div>
@@ -243,6 +256,8 @@ class Romerema_Admin {
                             if( 'post' === $r['type'] ) {
                                 $target_label = 'Page Redirect';
                                 $title = get_the_title( $r['target'] );
+                                $ptype_raw = get_post_type( $r['target'] );
+                                $detailed_type = $ptype_raw === 'page' ? 'page' : 'post';
                                 // If post is deleted, handle gracefully
                                 if( $title ) {
                                     $target_display = $title;
@@ -250,15 +265,18 @@ class Romerema_Admin {
                                 } else {
                                     $target_display = '(Deleted Post ID: ' . $r['target'] . ')';
                                     $full_target = '#';
+                                    $detailed_type = 'post'; // fallback
                                 }
                                 $data_attr['target_title'] = $title;
                             } else {
                                 $full_target = $r['target'];
+                                $detailed_type = 'url';
                             }
                             
                             $full_source = home_url( '/' . $r['slug'] );
+                            $added_ts = isset($r['date']) ? strtotime($r['date']) : 0;
                         ?>
-                            <div class="rr-card" id="card-<?php echo esc_attr( $r['id'] ); ?>" data-slug="<?php echo esc_attr( strtolower($r['slug'] ) ); ?>" data-target="<?php echo esc_attr( strtolower( $target_display ) ); ?>" data-code="<?php echo esc_attr( $r['code'] ); ?>" style="position:relative;">
+                            <div class="rr-card" id="card-<?php echo esc_attr( $r['id'] ); ?>" data-slug="<?php echo esc_attr( strtolower($r['slug'] ) ); ?>" data-target="<?php echo esc_attr( strtolower( $target_display ) ); ?>" data-code="<?php echo esc_attr( $r['code'] ); ?>" data-hits="<?php echo intval( $r['hits'] ?? 0 ); ?>" data-ptype="<?php echo esc_attr( $detailed_type ); ?>" data-added="<?php echo esc_attr( $added_ts ); ?>" style="position:relative;">
                                 
                                 <?php 
                                     $is_override = isset($r['override']) && ( $r['override'] === true || $r['override'] === '1' || $r['override'] === 'true' );
@@ -479,8 +497,9 @@ class Romerema_Admin {
     }
 
     public function render_404_page() {
-        $option_404_target = get_option( 'romeo_redirect_404_target', '' );
-        $option_404_type = get_option( 'romeo_redirect_404_type', 'url' );
+        $option_404_enabled = get_option( 'romeo_redirect_404_enabled', '1' );
+        $option_404_target  = get_option( 'romeo_redirect_404_target', '' );
+        $option_404_type    = get_option( 'romeo_redirect_404_type', 'url' );
         $option_404_post_id = get_option( 'romeo_redirect_404_post_id', 0 );
         
         $post_title = '';
@@ -500,6 +519,19 @@ class Romerema_Admin {
             </div>
 
             <div class="rr-creator rr-404-container">
+
+                <!-- ── Enable / Disable Toggle ── -->
+                <div class="rr-404-toggle-row" id="rr-404-toggle-row">
+                    <div class="rr-404-toggle-info">
+                        <span class="rr-404-toggle-title"><?php esc_html_e( '404 Handler', 'romeo-redirect-manager' ); ?></span>
+                        <span class="rr-404-toggle-desc" id="rr-404-toggle-desc"><?php echo $option_404_enabled ? esc_html__( 'Active — 404s are being redirected', 'romeo-redirect-manager' ) : esc_html__( 'Inactive — 404s load normally', 'romeo-redirect-manager' ); ?></span>
+                    </div>
+                    <label class="rr-toggle-switch" title="<?php esc_attr_e( 'Enable / disable 404 redirect', 'romeo-redirect-manager' ); ?>">
+                        <input type="checkbox" id="rr-404-enabled-check" <?php checked( $option_404_enabled, '1' ); ?> data-nonce="<?php echo esc_attr( wp_create_nonce( 'romerema_toggle_404_nonce' ) ); ?>">
+                        <span class="rr-toggle-track"><span class="rr-toggle-thumb"></span></span>
+                    </label>
+                </div>
+
                 <h3><?php esc_html_e( 'Default 404 Redirect', 'romeo-redirect-manager' ); ?></h3>
                 <p class="rr-404-description">
                     <?php esc_html_e( 'You can choose to redirect all 404 (Not Found) errors to a specific specific URL, such as your homepage or a custom search page. If left empty, the default 404 behavior will be used.', 'romeo-redirect-manager' ); ?>
@@ -649,8 +681,27 @@ class Romerema_Admin {
         }
 
         update_option( $this->option_key, $redirects );
-        wp_send_json_success();
+
+        // Return saved data so JS can inject the card without reloading
+        $saved = null;
+        foreach ( $redirects as $r ) {
+            if ( $r['id'] === $id ) { $saved = $r; break; }
+        }
+        
+        $saved['ptype'] = 'url';
+        if ( 'post' === $saved['type'] ) {
+            $pt = get_post_type( $saved['target'] );
+            $saved['ptype'] = ( $pt === 'page' ) ? 'page' : 'post';
+        }
+
+        wp_send_json_success( array(
+            'redirect' => $saved,
+            'is_edit'  => ! empty( $_POST['id'] ),
+            'site_url' => trailingslashit( home_url() ),
+            'date_fmt' => date_i18n( get_option( 'date_format' ), strtotime( $saved['date'] ?? 'now' ) ),
+        ) );
     }
+
 
     public function ajax_delete_redirect() {
         check_ajax_referer( 'romerema_delete_nonce', 'nonce' );
@@ -900,6 +951,15 @@ class Romerema_Admin {
         
         wp_send_json_success();
     }
+
+    public function ajax_toggle_404_enabled() {
+        check_ajax_referer( 'romerema_toggle_404_nonce', 'nonce' );
+        if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error();
+        $enabled = isset( $_POST['enabled'] ) && ( $_POST['enabled'] === 'true' || $_POST['enabled'] === '1' ) ? '1' : '0';
+        update_option( 'romeo_redirect_404_enabled', $enabled );
+        wp_send_json_success( array( 'enabled' => $enabled === '1' ) );
+    }
+
     public function ajax_toggle_override() {
         check_ajax_referer( 'romerema_save_nonce', 'nonce' );
 
@@ -928,5 +988,305 @@ class Romerema_Admin {
         } else {
             wp_send_json_error( array( 'message' => 'Redirect not found' ) );
         }
+    }
+
+    // ==========================================
+    // DASHBOARD WIDGET
+    // ==========================================
+
+    public function register_dashboard_widget() {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            return;
+        }
+        wp_add_dashboard_widget(
+            'romerema_dashboard_widget',
+            __( 'Romeo Redirects', 'romeo-redirect-manager' ),
+            array( $this, 'render_dashboard_widget' )
+        );
+    }
+
+    public function render_dashboard_widget() {
+        $redirects    = get_option( $this->option_key, array() );
+        $total        = count( $redirects );
+        $total_hits   = (int) array_sum( array_column( $redirects, 'hits' ) );
+        $logo_url     = plugins_url( 'assets/images/icon.svg', dirname( __FILE__ ) . '/../romeo-redirect-manager.php' );
+        $manage_url   = admin_url( 'admin.php?page=romeo-redirect-manager' );
+        $new_url      = admin_url( 'admin.php?page=romeo-redirect-manager&rr_open=new' );
+        $settings_url = admin_url( 'admin.php?page=romeo-redirect-manager-404' );
+        $nonce        = wp_create_nonce( 'romerema_save_nonce' );
+
+        // Count by type
+        $url_count  = 0;
+        $post_count = 0;
+        foreach ( $redirects as $r ) {
+            if ( 'post' === $r['type'] ) { $post_count++; } else { $url_count++; }
+        }
+
+        // Count by HTTP code
+        $codes       = array( '301' => 0, '302' => 0, '307' => 0, '308' => 0 );
+        $code_colors = array( '301' => '#3b82f6', '302' => '#f59e0b', '307' => '#8b5cf6', '308' => '#ec4899' );
+        foreach ( $redirects as $r ) {
+            $code = (string) $r['code'];
+            if ( isset( $codes[ $code ] ) ) { $codes[ $code ]++; }
+        }
+
+        // Recent (newest first) and Top by hits
+        $recent   = array_slice( array_reverse( $redirects ), 0, 4 );
+        $by_hits  = $redirects;
+        usort( $by_hits, function( $a, $b ) { return (int)( $b['hits'] ?? 0 ) - (int)( $a['hits'] ?? 0 ); } );
+        $top_hits = array_slice( $by_hits, 0, 4 );
+
+        // 404 settings
+        $r404_type   = get_option( 'romeo_redirect_404_type', '' );
+        $r404_active = ! empty( $r404_type );
+        ?>
+        <div class="rr-dw" id="romerema_dashboard_widget">
+
+            <!-- ══ Hero Banner ══ -->
+            <div class="rr-dw-hero">
+                <div class="rr-dw-hero-brand">
+                    <img src="<?php echo esc_url( $logo_url ); ?>" alt="Romeo" class="rr-dw-logo">
+                    <div>
+                        <div class="rr-dw-hero-title">Romeo Redirects</div>
+                        <div class="rr-dw-hero-sub">redirect manager</div>
+                    </div>
+                </div>
+                <div class="rr-dw-hero-stats">
+                    <div class="rr-dw-big-stat">
+                        <span class="rr-dw-big-num"><?php echo esc_html( number_format_i18n( $total ) ); ?></span>
+                        <span class="rr-dw-big-lbl"><?php esc_html_e( 'Redirects', 'romeo-redirect-manager' ); ?></span>
+                    </div>
+                    <div class="rr-dw-big-stat">
+                        <span class="rr-dw-big-num rr-dw-hits"><?php echo esc_html( number_format_i18n( $total_hits ) ); ?></span>
+                        <span class="rr-dw-big-lbl"><?php esc_html_e( 'Total Hits', 'romeo-redirect-manager' ); ?></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ Quick-Add Form ══ -->
+            <div class="rr-dw-quick-add">
+                <div class="rr-dw-qa-label"><?php esc_html_e( 'Quick Add', 'romeo-redirect-manager' ); ?></div>
+                <div class="rr-dw-qa-row" id="rr-dw-qa-row">
+                    <span class="rr-dw-qa-slash">/</span>
+                    <input type="text" id="rr-dw-slug" class="rr-dw-qa-input" placeholder="<?php esc_attr_e( 'your-slug', 'romeo-redirect-manager' ); ?>" autocomplete="off">
+                    <span class="rr-dw-qa-arrow">→</span>
+                    <input type="url" id="rr-dw-url" class="rr-dw-qa-input rr-dw-qa-url" placeholder="https://target.com">
+                    <button id="rr-dw-qa-btn" class="rr-dw-qa-btn" data-nonce="<?php echo esc_attr( $nonce ); ?>">
+                        <span class="rr-dw-qa-btn-text"><?php esc_html_e( 'Add', 'romeo-redirect-manager' ); ?></span>
+                        <span class="rr-dw-qa-btn-icon dashicons dashicons-plus-alt2"></span>
+                    </button>
+                </div>
+                <div id="rr-dw-qa-msg" class="rr-dw-qa-msg hidden"></div>
+            </div>
+
+            <?php if ( $total > 0 ) : ?>
+
+            <!-- ══ Mini Stats Row ══ -->
+            <div class="rr-dw-mini-stats">
+                <div class="rr-dw-mini-stat"><span class="rr-dw-mini-num rr-c-url"><?php echo esc_html( number_format_i18n( $url_count ) ); ?></span><span class="rr-dw-mini-lbl"><?php esc_html_e( 'URL', 'romeo-redirect-manager' ); ?></span></div>
+                <div class="rr-dw-mini-divider"></div>
+                <div class="rr-dw-mini-stat"><span class="rr-dw-mini-num rr-c-page"><?php echo esc_html( number_format_i18n( $post_count ) ); ?></span><span class="rr-dw-mini-lbl"><?php esc_html_e( 'Page', 'romeo-redirect-manager' ); ?></span></div>
+                <div class="rr-dw-mini-divider"></div>
+                <?php foreach ( $codes as $code => $cnt ) : if ( $cnt === 0 ) continue; ?>
+                <div class="rr-dw-mini-stat">
+                    <span class="rr-dw-mini-dot" style="background:<?php echo esc_attr( $code_colors[ $code ] ); ?>;"></span>
+                    <span class="rr-dw-mini-num" style="color:<?php echo esc_attr( $code_colors[ $code ] ); ?>;"><?php echo esc_html( number_format_i18n( $cnt ) ); ?></span>
+                    <span class="rr-dw-mini-lbl"><?php echo esc_html( $code ); ?></span>
+                </div>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- ══ Code Breakdown Bars ══ -->
+            <div class="rr-dw-section-hd"><?php esc_html_e( 'Breakdown', 'romeo-redirect-manager' ); ?></div>
+            <div class="rr-dw-bars">
+                <?php foreach ( $codes as $code => $cnt ) :
+                    if ( $cnt === 0 ) continue;
+                    $pct = $total > 0 ? round( $cnt / $total * 100 ) : 0;
+                ?>
+                <div class="rr-dw-bar-row">
+                    <span class="rr-dw-bar-code" style="color:<?php echo esc_attr( $code_colors[ $code ] ); ?>"><?php echo esc_html( $code ); ?></span>
+                    <div class="rr-dw-bar-track">
+                        <div class="rr-dw-bar-fill" style="width:<?php echo esc_attr( $pct ); ?>%;background:<?php echo esc_attr( $code_colors[ $code ] ); ?>"></div>
+                    </div>
+                    <span class="rr-dw-bar-cnt"><?php echo esc_html( number_format_i18n( $cnt ) ); ?></span>
+                    <span class="rr-dw-bar-pct"><?php echo esc_html( $pct ); ?>%</span>
+                </div>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- ══ Top by Hits ══ -->
+            <?php if ( $total_hits > 0 ) : ?>
+            <div class="rr-dw-section-hd rr-dw-section-mt"><?php esc_html_e( 'Top Hits', 'romeo-redirect-manager' ); ?></div>
+            <ul class="rr-dw-list">
+                <?php foreach ( $top_hits as $r ) :
+                    $h = (int)( $r['hits'] ?? 0 ); if ( $h === 0 ) continue;
+                    $code_s = (string) $r['code'];
+                    $bw = round( $h / max(1,(int)$top_hits[0]['hits']) * 100 );
+                ?>
+                <li class="rr-dw-item">
+                    <span class="rr-dw-badge rr-dw-b<?php echo esc_attr( $code_s ); ?>"><?php echo esc_html( $code_s ); ?></span>
+                    <div class="rr-dw-item-slug-wrap">
+                        <span class="rr-dw-slug">/<?php echo esc_html( $r['slug'] ); ?></span>
+                        <div class="rr-dw-hit-track"><div class="rr-dw-hit-fill" style="width:<?php echo esc_attr($bw); ?>%"></div></div>
+                    </div>
+                    <span class="rr-dw-hcount"><?php echo esc_html( number_format_i18n( $h ) ); ?></span>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+            <?php endif; ?>
+
+            <!-- ══ Recently Added ══ -->
+            <div class="rr-dw-section-hd rr-dw-section-mt"><?php esc_html_e( 'Recently Added', 'romeo-redirect-manager' ); ?></div>
+            <ul class="rr-dw-list">
+                <?php foreach ( $recent as $r ) :
+                    $code_s = (string) $r['code'];
+                    $tgt    = $r['target'];
+                    if ( 'post' === $r['type'] ) {
+                        $t   = get_the_title( $r['target'] );
+                        $tgt = $t ? $t : __( 'Deleted', 'romeo-redirect-manager' );
+                    }
+                    $ds = isset( $r['date'] ) ? date_i18n( 'M j', strtotime( $r['date'] ) ) : '';
+                ?>
+                <li class="rr-dw-item">
+                    <span class="rr-dw-badge rr-dw-b<?php echo esc_attr( $code_s ); ?>"><?php echo esc_html( $code_s ); ?></span>
+                    <span class="rr-dw-slug" title="/<?php echo esc_attr( $r['slug'] ); ?>">/<?php echo esc_html( $r['slug'] ); ?></span>
+                    <span class="rr-dw-target" title="<?php echo esc_attr( $tgt ); ?>"><?php echo esc_html( $tgt ); ?></span>
+                    <?php if ( $ds ) : ?><span class="rr-dw-date"><?php echo esc_html( $ds ); ?></span><?php endif; ?>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+
+            <!-- ══ 404 Status ══ -->
+            <!-- 404 Status + Toggle -->
+            <?php
+            $r404_enabled = get_option( 'romeo_redirect_404_enabled', '1' );
+            $r404_on      = $r404_enabled === '1';
+            $toggle_nonce = wp_create_nonce( 'romerema_toggle_404_nonce' );
+            ?>
+            <div class="rr-dw-404 <?php echo $r404_on ? 'rr-dw-404-on' : 'rr-dw-404-off'; ?>" id="rr-dw-404-row">
+                <span class="rr-dw-404-dot" id="rr-dw-404-dot"></span>
+                <span id="rr-dw-404-label"><?php
+                    if ( $r404_on && $r404_active ) {
+                        esc_html_e( '404 handler active', 'romeo-redirect-manager' );
+                        echo ' <span class="rr-dw-404-type">('. esc_html( $r404_type ) . ')</span>';
+                    } elseif ( $r404_on && ! $r404_active ) {
+                        esc_html_e( '404 on - no destination set', 'romeo-redirect-manager' );
+                    } else {
+                        esc_html_e( '404 handler off', 'romeo-redirect-manager' );
+                    }
+                ?></span>
+                <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
+                    <label class="rr-dw-toggle-wrap" title="Toggle 404 handler">
+                        <input type="checkbox" id="rr-dw-404-toggle"
+                            <?php checked( $r404_on ); ?>
+                            data-nonce="<?php echo esc_attr( $toggle_nonce ); ?>"
+                            style="position:absolute;opacity:0;width:0;height:0;">
+                        <span class="rr-dw-toggle-track"><span class="rr-dw-toggle-thumb"></span></span>
+                    </label>
+                    <a href="<?php echo esc_url( $settings_url ); ?>" class="rr-dw-404-edit"><?php esc_html_e( 'Config', 'romeo-redirect-manager' ); ?></a>
+                </div>
+
+            </div>
+
+            <?php endif; // $total > 0 ?>
+
+
+            <!-- ══ Footer ══ -->
+            <div class="rr-dw-footer">
+                <a href="<?php echo esc_url( $manage_url ); ?>" class="rr-dw-foot-link">
+                    <span class="dashicons dashicons-randomize"></span> <?php esc_html_e( 'All Redirects', 'romeo-redirect-manager' ); ?>
+                </a>
+                <a href="<?php echo esc_url( $new_url ); ?>" class="rr-dw-foot-link rr-dw-foot-new">
+                    <span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Create Redirect', 'romeo-redirect-manager' ); ?>
+                </a>
+            </div>
+
+        </div><!-- .rr-dw -->
+
+        <script>
+        (function(){
+            var btn = document.getElementById('rr-dw-qa-btn');
+            if (!btn) return;
+            btn.addEventListener('click', function() {
+                var slug = document.getElementById('rr-dw-slug').value.trim().replace(/^\/+/, '');
+                var url  = document.getElementById('rr-dw-url').value.trim();
+                var msg  = document.getElementById('rr-dw-qa-msg');
+                var nonce = btn.dataset.nonce;
+
+                if (!slug) { showMsg('Please enter a slug.', false); return; }
+                if (!url)  { showMsg('Please enter a target URL.', false); return; }
+                if (!/^https?:\/\//.test(url)) { showMsg('URL must start with http:// or https://', false); return; }
+
+                btn.disabled = true;
+                btn.querySelector('.rr-dw-qa-btn-text').textContent = '...';
+
+                var fd = new FormData();
+                fd.append('action', 'romerema_save_redirect');
+                fd.append('nonce', nonce);
+                fd.append('slug', slug);
+                fd.append('type', 'url');
+                fd.append('target_url', url);
+                fd.append('code', '301');
+                fd.append('override', 'false');
+
+                fetch(ajaxurl, { method: 'POST', body: fd })
+                .then(function(r){ return r.json(); })
+                .then(function(r){
+                    if (r.success) {
+                        showMsg('✓ Redirect added!', true);
+                        document.getElementById('rr-dw-slug').value = '';
+                        document.getElementById('rr-dw-url').value  = '';
+                    } else {
+                        showMsg(r.data || 'Error saving.', false);
+                    }
+                    btn.disabled = false;
+                    btn.querySelector('.rr-dw-qa-btn-text').textContent = '<?php echo esc_js( __( 'Add', 'romeo-redirect-manager' ) ); ?>';
+                })
+                .catch(function(){
+                    showMsg('Network error.', false);
+                    btn.disabled = false;
+                    btn.querySelector('.rr-dw-qa-btn-text').textContent = '<?php echo esc_js( __( 'Add', 'romeo-redirect-manager' ) ); ?>';
+                });
+
+                function showMsg(text, ok) {
+                    msg.textContent = text;
+                    msg.className = 'rr-dw-qa-msg ' + (ok ? 'rr-dw-qa-ok' : 'rr-dw-qa-err');
+                    setTimeout(function(){ msg.className = 'rr-dw-qa-msg hidden'; }, 3500);
+                }
+            });
+
+            // 404 Toggle
+            (function() {
+                var toggle = document.getElementById('rr-dw-404-toggle');
+                if (!toggle) return;
+                toggle.addEventListener('change', function() {
+                    var enabled = toggle.checked;
+                    var row = document.getElementById('rr-dw-404-row');
+                    var label = document.getElementById('rr-dw-404-label');
+                    var dot = document.getElementById('rr-dw-404-dot');
+                    var fd = new FormData();
+                    fd.append('action', 'romerema_toggle_404');
+                    fd.append('nonce', toggle.dataset.nonce);
+                    fd.append('enabled', enabled ? 'true' : 'false');
+                    fetch(ajaxurl, { method: 'POST', body: fd })
+                    .then(function(r) { return r.json(); })
+                    .then(function(r) {
+                        if (r.success) {
+                            if (row) {
+                                row.className = 'rr-dw-404 ' + (enabled ? 'rr-dw-404-on' : 'rr-dw-404-off');
+                            }
+                            if (label) {
+                                label.textContent = enabled ? '404 handler active' : '404 handler off';
+                            }
+                        } else {
+                            toggle.checked = !enabled; // revert
+                        }
+                    })
+                    .catch(function() { toggle.checked = !enabled; });
+                });
+            })();
+        })();
+        </script>
+        <?php
     }
 }

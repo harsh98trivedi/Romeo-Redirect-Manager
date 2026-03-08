@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.4.0 - 2026-03-09
+### � Dashboard Widget & Advanced Sorting
+
+This release introduces comprehensive sorting capabilities right from the dashboard, mobile list-view visual improvements, and a brand new beautiful WordPress Dashboard Widget.
+
+#### ✨ New Features
+- **Dashboard Widget**: A responsive, branded widget directly on the main WordPress dashboard gives you a bird's-eye view. Quickly toggle the 404 handler, click straightforward creation links, and monitor recent hits / captured 404s.
+- **Advanced Sorting**: Added a new dropdown allowing you to instantly sort your redirect list by Name (A-Z), Most Hits, Internal Pages First, Internal Posts First, External Sites First, or Newest First.
+- **Smart Data Attributes**: Redirect cards now dynamically track post types and hit numbers for instantaneous client-side sorting without page reloads.
+
+#### 🛠 Improvements
+- **Mobile List View Refinement**: Adjusted the `.list-view` flex wrapping on mobile portrait screens, ensuring that status tags, hit counts, and date badges align perfectly wrapping to a second row instead of crowding together.
+- **Animation Cleanup**: Stripped out residual inline animation styles post-save, ensuring that CSS hover states (lift and border highlights) function perfectly on newly created or updated cards. 
+
 ## 1.3.1 - 2026-03-05
 ### 🎭 The "App-Grade" UX/UI Overhaul
 

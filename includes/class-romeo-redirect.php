@@ -82,7 +82,12 @@ class Romerema_Redirect {
     }
 
     public function handle_404() {
+        // Respect the on/off toggle (defaults to enabled for backwards compatibility)
+        if ( ! get_option( 'romeo_redirect_404_enabled', '1' ) ) {
+            return;
+        }
         if ( is_404() ) {
+
             $type = get_option( 'romeo_redirect_404_type', 'url' );
             $final_url = '';
 

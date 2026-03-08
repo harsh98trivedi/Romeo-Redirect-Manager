@@ -79,15 +79,21 @@ Yes. The "Target Type" selector allows you to choose "Internal Post" or "Interna
 
 == Screenshots ==
 
-1. **Dashboard** — The modern card-based redirect management interface.
-2. **Creator Panel** — Easily create new redirects with internal post search.
-3. **Bulk Actions** — Bulk delete redirects.
-4. **Import/Export** — Import and export redirects with ease.
-5. **Responsive** — Responsive design for all screen sizes.
-6. **Override Mode** —  Force the redirect to take precedence over the existing page.
-7. **404 Management** — Configure 404 redirects to Homepage, URL, or Pages.
+1. **Dashboard** — The beautiful, modern card-based redirect management interface with real-time search, filters, and a dropdown for advanced sorting.
+2. **Creator Panel** — Expanded inline creator panel allowing you to easily add new 301, 302, 307, or 308 redirects right from the dashboard.
+3. **Bulk Actions** — Bulk select multiple redirect cards via a drag-to-select motion for quick deletion of old links.
+4. **Import/Export** — The import conflicts modal handling uploads of JSON backups with intuitive choices to merge or overwrite existing redirects.
+5. **Mobile Responsive** — A fully responsive layout demonstrating the card interface flawlessly adapting to mobile device screens.
+6. **Override Mode** — A built-in safety net that warns when a chosen slug conflicts with an existing internal page, while offering an "Override" box to force the change.
+7. **404 Management** — Dedicated settings page to quickly map all lost 404 traffic to the homepage, external URLs, or any existing page.
+8. **Dashboard Widget** — A powerful snapshot on your main WordPress dashboard showing quick-add tools, top hits, and an active 404 handler toggle.
 
 == Changelog ==
+
+= 1.4.0 - 2026-03-09 =
+* **Feature:** Added sorting dropdown to instantly sort redirects by Name, Most Hits, Internal Pages, Internal Posts, and External Sites.
+* **Feature:** Added Dashboard Widget to view recent hits, 404 count, and quick toggle the 404 handler.
+* **UX:** Realigned List View for responsive mobile interfaces for better typography fit.
 
 = 1.3.1 - 2026-03-05 =
 * **UX:** Complete overhaul with "App-Grade" custom select components.
