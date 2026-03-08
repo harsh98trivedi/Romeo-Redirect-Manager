@@ -1,7 +1,7 @@
 === Romeo Redirect Manager ===
 Contributors: harsh98trivedi
 Tags: redirection, redirect, 301, 308, seo
-Donate link: https://github.com/sponsors/harsh98trivedi
+Donate link: https://buymeacoffee.com/harshtrivedi
 Requires at least: 5.6
 Tested up to: 6.9
 Stable tag: 1.3.1
