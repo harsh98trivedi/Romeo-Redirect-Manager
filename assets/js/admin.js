@@ -1,6 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
     
-    // Core custom select functionality
+    // Format large numbers for UI (e.g. 1.5k, 2M+)
+    function formatBigNumber(n) {
+        n = parseInt(n) || 0;
+        if (n >= 1000000000) return (n / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B+';
+        if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M+';
+        if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+        return n.toLocaleString();
+    }
+    
     function initCustomSelects() {
         const selects = document.querySelectorAll('select.rr-select:not(.rr-select-native), select.rr-input:not(.rr-select-native)');
         
@@ -18,7 +26,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const trigger = document.createElement('div');
             trigger.className = 'rr-select-trigger';
             const initialText = select.options[select.selectedIndex]?.text || 'Select...';
+            const initialVal = select.value;
             trigger.innerHTML = `<span class="rr-selected-text">${initialText}</span><span class="dashicons dashicons-arrow-down-alt2"></span>`;
+            if (['301','302','307','308'].includes(initialVal)) {
+                trigger.setAttribute('data-code', initialVal);
+            }
             wrapper.appendChild(trigger);
 
             // Create dropdown menu
@@ -33,6 +45,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     e.stopPropagation();
                     select.value = option.value;
                     trigger.querySelector('.rr-selected-text').textContent = option.text;
+                    
+                    if (['301','302','307','308'].includes(option.value)) {
+                        trigger.setAttribute('data-code', option.value);
+                    } else {
+                        trigger.removeAttribute('data-code');
+                    }
+
                     menu.classList.remove('show');
                     trigger.classList.remove('active');
                     
@@ -83,6 +102,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const selectedOption = select.options[select.selectedIndex];
                 triggerText.textContent = selectedOption ? selectedOption.text : 'Select...';
                 
+                const trigger = wrapper.querySelector('.rr-select-trigger');
+                if (trigger && ['301','302','307','308'].includes(select.value)) {
+                    trigger.setAttribute('data-code', select.value);
+                } else if (trigger) {
+                    trigger.removeAttribute('data-code');
+                }
+
                 options.forEach(opt => {
                     opt.classList.toggle('selected', opt.dataset.value === select.value);
                 });
@@ -135,6 +161,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // (used by the dashboard widget "Create Redirect" button)
     (function() {
         const params = new URLSearchParams(window.location.search);
+        
+        // Handle search param
+        const searchParam = params.get('rr_s');
+        if (searchParam) {
+            const cardSearch = document.getElementById('rr-card-search');
+            if (cardSearch) {
+                cardSearch.value = searchParam;
+                // Trigger search after a small delay to ensure cards are loaded/ready
+                setTimeout(() => {
+                    cardSearch.dispatchEvent(new Event('input', { bubbles: true }));
+                }, 500);
+            }
+        }
+
         if (params.get('rr_open') === 'new' && dom.panel && dom.btnNew) {
             resetForm();
             dom.panel.classList.remove('hidden');
@@ -147,6 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Clean URL without reloading
             const clean = new URL(window.location.href);
             clean.searchParams.delete('rr_open');
+            clean.searchParams.delete('rr_s');
             window.history.replaceState({}, '', clean.toString());
         }
     })();
@@ -578,7 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="rr-status-label">${r.code} Redirect</span>
                 </div>
                 <div class="rr-hits-badge">
-                    <span class="rr-hits-num">0</span>
+                    <span class="rr-hits-num">${formatBigNumber(hits)}</span>
                     <span class="rr-hits-lbl">HITS</span>
                 </div>
                 <div class="rr-date-badge">${dateFmt}</div>
@@ -619,6 +660,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleFormSubmit(e) {
         if(e) e.preventDefault();
+        
+        // Auto-add https:// support and lowercase
+        const targetUrlInput = dom.form.querySelector('[name="target_url"]');
+        const slugInput = dom.form.querySelector('[name="slug"]');
+        
+        if (slugInput) {
+            slugInput.value = slugInput.value.toLowerCase();
+        }
+
+        if (dom.targetType.value === 'url' && targetUrlInput && targetUrlInput.value.trim() !== '') {
+            let val = targetUrlInput.value.trim().toLowerCase();
+            if (!/^https?:\/\//i.test(val)) {
+                targetUrlInput.value = 'https://' + val;
+            } else {
+                targetUrlInput.value = val;
+            }
+        }
+        
         const formData = new FormData(dom.form);
         formData.append('action', 'romerema_save_redirect');
         formData.append('nonce', romerema_vars.nonce);
@@ -995,6 +1054,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert('Please enter a destination URL for the 404 redirect.');
                     urlInput?.focus();
                     return;
+                }
+                let val = urlInput.value.trim().toLowerCase();
+                if (!/^https?:\/\//i.test(val)) {
+                    urlInput.value = 'https://' + val;
+                } else {
+                    urlInput.value = val;
                 }
             }
 
@@ -1449,12 +1514,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSelectAll = document.getElementById('rr-bulk-select-all-btn');
     if(btnSelectAll) {
         btnSelectAll.addEventListener('click', () => {
-             const allCheckboxes = document.querySelectorAll('.rr-bulk-checkbox');
-             
-             allCheckboxes.forEach(cb => {
+             const visibleCheckboxes = Array.from(document.querySelectorAll('.rr-bulk-checkbox')).filter(cb => {
                  const card = cb.closest('.rr-card');
-                 // Only select if card is visible (respects search)
-                 if(card && card.style.display !== 'none') {
+                 return card && card.style.display !== 'none';
+             });
+
+             const allChecked = visibleCheckboxes.length > 0 && visibleCheckboxes.every(cb => cb.checked);
+             
+             visibleCheckboxes.forEach(cb => {
+                 const card = cb.closest('.rr-card');
+                 if(!card) return;
+
+                 if (allChecked) {
+                     // Deselect
+                     cb.checked = false;
+                     selectedIds.delete(cb.value);
+                     card.style.borderColor = '#e2e8f0';
+                     card.style.backgroundColor = '#ffffff';
+                     card.classList.remove('is-selected');
+                 } else {
+                     // Select
                      if(!cb.checked) {
                          cb.checked = true;
                          selectedIds.add(cb.value);

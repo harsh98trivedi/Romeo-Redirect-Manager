@@ -1,5 +1,37 @@
 # Changelog
 
+## 1.5.1 - 2026-03-16
+### 🧪 Dashboard Widget & Pro UI Refinements
+
+This major refinement update elevates the Dashboard Widget to match the premium aesthetics of the main plugin and introduces smart scaling features.
+
+#### ✨ New Features
+- **Premium Custom Selects**: The Dashboard Widget now uses the high-end custom select system for Destination Type and Redirect Code, featuring smooth transitions and shadow-enhanced floating menus.
+- **Dynamic Branded Slashes**: Forward slashes `/` in the widget and management grid are now dynamically color-coded based on the redirect status (Blue for 301, Amber for 302, Purple for 307, Pink for 308).
+- **Persistent Widget Sections**: Sections like "Top Hits" and "Recently Added" are now retractable and remember their state across sessions using cookie-reliant persistence.
+- **Smart "Select All" Toggle**: Improved bulk management logic—clicking "Select All" now toggles selection, allowing you to quickly deselect all visible items.
+
+#### 🛠 Improvements
+- **"Big Number" Scaling**: Implemented human-readable number formatting (e.g., `250k`, `10M+`) for hit counts and redirect totals to ensure the UI stays clean even with millions of hits.
+- **Robust Slug Truncation**: Perfected text truncation for long URLs in both the widget and main cards, ensuring external link icons remain accessible on hover.
+- **Pixel-Perfect Alignment**: Resolved micro-alignment issues in custom selects, ensuring chevrons and status dots are perfectly centered.
+- **Redirect Focus**: The `rr_s` parameter now handles partial matches and auto-scrolls to the focused redirect card.
+- **Integrated Search Links**: Clicking any redirect in the widget takes you directly to the filtered result in the main manager.
+
+## 1.5.0 - 2026-03-16
+### 🛡️ Smart Validation & UX Refinements
+
+This release focuses on data integrity with automatic protocol detection and significant mobile UX improvements for the 404 management system.
+
+#### ✨ New Features
+- **Smart Protocol Auto-Fill**: Target URLs now automatically receive `https://` if entered without a protocol, reducing configuration errors.
+- **Improved 404 Mobile UX**: Completely redesigned segmented control for small screens. Buttons now stack vertically with clearer touch targets to prevent mis-clicks.
+
+#### 🛠 Improvements
+- **SEO Optimization**: Updated plugin metadata, tags, and descriptive copy to improve search visibility on WordPress.org.
+- **Clean UI**: Removed distracting hover animations from the "Status Codes" informational guide.
+- **Version Bump**: Full system update to v1.5.0.
+
 ## 1.4.0 - 2026-03-09
 ### � Dashboard Widget & Advanced Sorting
 

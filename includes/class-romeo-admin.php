@@ -165,7 +165,7 @@ class Romerema_Admin {
                         <!-- Target: URL -->
                         <div class="rr-form-group" id="rr-group-url">
                             <label class="rr-label"><?php esc_html_e( 'Target URL', 'romeo-redirect-manager' ); ?></label>
-                            <input class="rr-input" type="url" name="target_url" placeholder="https://www.google.com">
+                            <input class="rr-input" type="text" name="target_url" placeholder="https://www.google.com">
                         </div>
 
                         <!-- Target: Post -->
@@ -294,9 +294,9 @@ class Romerema_Admin {
 
                                 <!-- Slug row: /slug text + inline copy button -->
                                 <div class="rr-card-slug-wrap">
-                                    <div class="rr-card-slug" title="/<?php echo esc_attr( $r['slug'] ); ?>" data-copy="<?php echo esc_url( $full_source ); ?>">
+                                    <span class="rr-card-slug" id="rr-slug-<?php echo esc_attr( $r['id'] ); ?>" title="<?php echo esc_attr( $full_source ); ?>" data-copy="<?php echo esc_url( $full_source ); ?>">
                                         <span class="slash">/</span><span class="rr-slug-text"><?php echo esc_html( $r['slug'] ); ?></span>
-                                    </div>
+                                    </span>
                                     <button class="rr-slug-copy rr-copy-btn" data-copy="<?php echo esc_url( $full_source ); ?>" title="<?php esc_attr_e('Copy source URL', 'romeo-redirect-manager'); ?>">
                                         <span class="dashicons dashicons-admin-page"></span>
                                     </button>
@@ -320,7 +320,7 @@ class Romerema_Admin {
                                         <span class="rr-status-label"><?php echo esc_attr( $r['code'] ); ?> Redirect</span>
                                     </div>
                                     <div class="rr-hits-badge">
-                                        <span class="rr-hits-num"><?php echo isset($r['hits']) ? esc_html( number_format_i18n( $r['hits'] ) ) : '0'; ?></span>
+                                        <span class="rr-hits-num"><?php echo isset($r['hits']) ? esc_html( $this->format_big_number( $r['hits'] ) ) : '0'; ?></span>
                                         <span class="rr-hits-lbl">HITS</span>
                                     </div>
                                     <?php if( $has_conflict && $is_override ) : ?>
@@ -564,7 +564,7 @@ class Romerema_Admin {
                         <!-- URL View -->
                         <div id="rr-view-url" class="<?php echo ($option_404_type !== 'url') ? 'hidden' : ''; ?>">
                             <label class="rr-form-label"><?php esc_html_e( 'Destination URL', 'romeo-redirect-manager' ); ?></label>
-                            <input class="rr-input" type="url" name="url_404" placeholder="https://example.com/custom-404-page" value="<?php echo esc_attr( $option_404_target ); ?>">
+                            <input class="rr-input" type="text" name="url_404" placeholder="https://example.com/404-page" value="<?php echo esc_attr( $option_404_target ); ?>">
                              <p class="rr-form-help"><?php esc_html_e( 'Redirects all 404 traffic to this external URL.', 'romeo-redirect-manager' ); ?></p>
                         </div>
 
@@ -1053,30 +1053,70 @@ class Romerema_Admin {
                 </div>
                 <div class="rr-dw-hero-stats">
                     <div class="rr-dw-big-stat">
-                        <span class="rr-dw-big-num"><?php echo esc_html( number_format_i18n( $total ) ); ?></span>
+                        <span class="rr-dw-big-num" id="rr-dw-total-redirects"><?php echo esc_html( $this->format_big_number( $total ) ); ?></span>
                         <span class="rr-dw-big-lbl"><?php esc_html_e( 'Redirects', 'romeo-redirect-manager' ); ?></span>
                     </div>
                     <div class="rr-dw-big-stat">
-                        <span class="rr-dw-big-num rr-dw-hits"><?php echo esc_html( number_format_i18n( $total_hits ) ); ?></span>
+                        <span class="rr-dw-big-num rr-dw-hits"><?php echo esc_html( $this->format_big_number( $total_hits ) ); ?></span>
                         <span class="rr-dw-big-lbl"><?php esc_html_e( 'Total Hits', 'romeo-redirect-manager' ); ?></span>
                     </div>
                 </div>
             </div>
 
-            <!-- ══ Quick-Add Form ══ -->
+            <!-- ══ Quick-Add Section ══ -->
             <div class="rr-dw-quick-add">
-                <div class="rr-dw-qa-label"><?php esc_html_e( 'Quick Add', 'romeo-redirect-manager' ); ?></div>
-                <div class="rr-dw-qa-row" id="rr-dw-qa-row">
-                    <span class="rr-dw-qa-slash">/</span>
-                    <input type="text" id="rr-dw-slug" class="rr-dw-qa-input" placeholder="<?php esc_attr_e( 'your-slug', 'romeo-redirect-manager' ); ?>" autocomplete="off">
-                    <span class="rr-dw-qa-arrow">→</span>
-                    <input type="url" id="rr-dw-url" class="rr-dw-qa-input rr-dw-qa-url" placeholder="https://target.com">
-                    <button id="rr-dw-qa-btn" class="rr-dw-qa-btn" data-nonce="<?php echo esc_attr( $nonce ); ?>">
-                        <span class="rr-dw-qa-btn-text"><?php esc_html_e( 'Add', 'romeo-redirect-manager' ); ?></span>
-                        <span class="rr-dw-qa-btn-icon dashicons dashicons-plus-alt2"></span>
-                    </button>
+                <div class="rr-dw-qa-label"><?php esc_html_e( 'Quick Add Link', 'romeo-redirect-manager' ); ?></div>
+                
+                <div class="rr-dw-qa-main-card">
+                    <!-- Step 1: Source -->
+                    <div class="rr-dw-qa-item">
+                        <div class="rr-dw-qa-item-header"><?php esc_html_e( '1. From Source (Slug)', 'romeo-redirect-manager' ); ?></div>
+                        <div class="rr-dw-qa-input-box">
+                            <span class="rr-dw-qa-pfx rr-dw-slash">/</span>
+                            <input type="text" id="rr-dw-slug" placeholder="<?php esc_attr_e( 'your-slug', 'romeo-redirect-manager' ); ?>" autocomplete="off">
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Destination -->
+                    <div class="rr-dw-qa-item">
+                        <div class="rr-dw-qa-item-header"><?php esc_html_e( '2. To Destination', 'romeo-redirect-manager' ); ?></div>
+                        <div class="rr-dw-qa-flex-row">
+                            <select id="rr-dw-type" class="rr-select type-sel">
+                                <option value="url"><?php esc_html_e( 'External URL', 'romeo-redirect-manager' ); ?></option>
+                                <option value="post"><?php esc_html_e( 'Internal Page', 'romeo-redirect-manager' ); ?></option>
+                            </select>
+                            <div class="rr-dw-qa-input-box" id="rr-dw-target-wrap">
+                                <input type="text" id="rr-dw-url" placeholder="https://example.com">
+                                <div id="rr-dw-post-selector" class="rr-dw-hidden">
+                                    <input type="text" id="rr-dw-post-search" placeholder="<?php esc_attr_e( 'Search content...', 'romeo-redirect-manager' ); ?>" autocomplete="off">
+                                    <div id="rr-dw-post-results" class="rr-dw-post-results rr-dw-hidden"></div>
+                                    <input type="hidden" id="rr-dw-target-post-id">
+                                </div>
+                            </div>
+                        </div>
+                        <div id="rr-dw-selected-post-row" class="rr-dw-hidden">
+                            <div id="rr-dw-selected-post" class="rr-dw-selected-post"></div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Actions -->
+                    <div class="rr-dw-qa-action-footer">
+                        <div class="rr-dw-qa-status-group">
+                            <span class="rr-dw-qa-footer-lbl"><?php esc_html_e( 'Code:', 'romeo-redirect-manager' ); ?></span>
+                            <select id="rr-dw-code" class="rr-select" style="max-width:120px;height:38px;">
+                                <option value="301" selected>301</option>
+                                <option value="302">302</option>
+                                <option value="307">307</option>
+                                <option value="308">308</option>
+                            </select>
+                        </div>
+                        <button id="rr-dw-qa-btn" class="rr-dw-qa-primary-btn" data-nonce="<?php echo esc_attr( $nonce ); ?>">
+                            <span class="rr-dw-qa-btn-text"><?php esc_html_e( 'Add Redirect', 'romeo-redirect-manager' ); ?></span>
+                            <span class="dashicons dashicons-arrow-right-alt2"></span>
+                        </button>
+                    </div>
                 </div>
-                <div id="rr-dw-qa-msg" class="rr-dw-qa-msg hidden"></div>
+                <div id="rr-dw-qa-msg" class="rr-dw-qa-msg rr-dw-hidden"></div>
             </div>
 
             <?php if ( $total > 0 ) : ?>
@@ -1097,8 +1137,11 @@ class Romerema_Admin {
             </div>
 
             <!-- ══ Code Breakdown Bars ══ -->
-            <div class="rr-dw-section-hd"><?php esc_html_e( 'Breakdown', 'romeo-redirect-manager' ); ?></div>
-            <div class="rr-dw-bars">
+            <div class="rr-dw-toggle-hd" data-target="rr-dw-breakdown">
+                <span><?php esc_html_e( 'Breakdown', 'romeo-redirect-manager' ); ?></span>
+                <span class="dashicons dashicons-arrow-down-alt2"></span>
+            </div>
+            <div class="rr-dw-bars rr-dw-collapsible" id="rr-dw-breakdown">
                 <?php foreach ( $codes as $code => $cnt ) :
                     if ( $cnt === 0 ) continue;
                     $pct = $total > 0 ? round( $cnt / $total * 100 ) : 0;
@@ -1108,53 +1151,69 @@ class Romerema_Admin {
                     <div class="rr-dw-bar-track">
                         <div class="rr-dw-bar-fill" style="width:<?php echo esc_attr( $pct ); ?>%;background:<?php echo esc_attr( $code_colors[ $code ] ); ?>"></div>
                     </div>
-                    <span class="rr-dw-bar-cnt"><?php echo esc_html( number_format_i18n( $cnt ) ); ?></span>
+                    <span class="rr-dw-bar-cnt"><?php echo esc_html( $this->format_big_number( $cnt ) ); ?></span>
                     <span class="rr-dw-bar-pct"><?php echo esc_html( $pct ); ?>%</span>
                 </div>
                 <?php endforeach; ?>
             </div>
+            <div class="rr-dw-sep-line"></div>
 
             <!-- ══ Top by Hits ══ -->
             <?php if ( $total_hits > 0 ) : ?>
-            <div class="rr-dw-section-hd rr-dw-section-mt"><?php esc_html_e( 'Top Hits', 'romeo-redirect-manager' ); ?></div>
-            <ul class="rr-dw-list">
+            <div class="rr-dw-toggle-hd rr-dw-section-mt" data-target="rr-dw-hits">
+                <span><?php esc_html_e( 'Top Hits', 'romeo-redirect-manager' ); ?></span>
+                <span class="dashicons dashicons-arrow-down-alt2"></span>
+            </div>
+            <ul class="rr-dw-list rr-dw-collapsible" id="rr-dw-hits">
                 <?php foreach ( $top_hits as $r ) :
                     $h = (int)( $r['hits'] ?? 0 ); if ( $h === 0 ) continue;
                     $code_s = (string) $r['code'];
                     $bw = round( $h / max(1,(int)$top_hits[0]['hits']) * 100 );
                 ?>
                 <li class="rr-dw-item">
-                    <span class="rr-dw-badge rr-dw-b<?php echo esc_attr( $code_s ); ?>"><?php echo esc_html( $code_s ); ?></span>
+                    <div class="rr-status-dot code-<?php echo esc_attr( $code_s ); ?>" style="margin-right: 2px;"></div>
                     <div class="rr-dw-item-slug-wrap">
-                        <span class="rr-dw-slug">/<?php echo esc_html( $r['slug'] ); ?></span>
-                        <div class="rr-dw-hit-track"><div class="rr-dw-hit-fill" style="width:<?php echo esc_attr($bw); ?>%"></div></div>
+                        <a href="<?php echo esc_url( $manage_url . '&rr_s=' . urlencode($r['slug']) ); ?>" class="rr-dw-slug" data-code="<?php echo esc_attr($code_s); ?>">
+                            <span class="rr-dw-slug-text"><span class="rr-dw-slash">/</span><?php echo esc_html( $r['slug'] ); ?></span>
+                            <span class="dashicons dashicons-external"></span>
+                        </a>
+                        <div class="rr-dw-hit-track"><div class="rr-dw-hit-fill" style="width:<?php echo esc_attr($bw); ?>%; background: var(--dot-color-<?php echo esc_attr($code_s); ?>);"></div></div>
                     </div>
-                    <span class="rr-dw-hcount"><?php echo esc_html( number_format_i18n( $h ) ); ?></span>
+                    <span class="rr-dw-hcount"><?php echo esc_html( $this->format_big_number( $h ) ); ?></span>
                 </li>
                 <?php endforeach; ?>
             </ul>
+            <div class="rr-dw-sep-line"></div>
             <?php endif; ?>
 
             <!-- ══ Recently Added ══ -->
-            <div class="rr-dw-section-hd rr-dw-section-mt"><?php esc_html_e( 'Recently Added', 'romeo-redirect-manager' ); ?></div>
-            <ul class="rr-dw-list">
-                <?php foreach ( $recent as $r ) :
-                    $code_s = (string) $r['code'];
-                    $tgt    = $r['target'];
-                    if ( 'post' === $r['type'] ) {
-                        $t   = get_the_title( $r['target'] );
-                        $tgt = $t ? $t : __( 'Deleted', 'romeo-redirect-manager' );
-                    }
-                    $ds = isset( $r['date'] ) ? date_i18n( 'M j', strtotime( $r['date'] ) ) : '';
-                ?>
-                <li class="rr-dw-item">
-                    <span class="rr-dw-badge rr-dw-b<?php echo esc_attr( $code_s ); ?>"><?php echo esc_html( $code_s ); ?></span>
-                    <span class="rr-dw-slug" title="/<?php echo esc_attr( $r['slug'] ); ?>">/<?php echo esc_html( $r['slug'] ); ?></span>
-                    <span class="rr-dw-target" title="<?php echo esc_attr( $tgt ); ?>"><?php echo esc_html( $tgt ); ?></span>
-                    <?php if ( $ds ) : ?><span class="rr-dw-date"><?php echo esc_html( $ds ); ?></span><?php endif; ?>
-                </li>
-                <?php endforeach; ?>
-            </ul>
+            <div class="rr-dw-toggle-hd rr-dw-section-mt" data-target="rr-dw-recent">
+                <span><?php esc_html_e( 'Recently Added', 'romeo-redirect-manager' ); ?></span>
+                <span class="dashicons dashicons-arrow-down-alt2"></span>
+            </div>
+            <div class="rr-dw-collapsible" id="rr-dw-recent">
+                <ul class="rr-dw-list" id="rr-dw-recent-list">
+                    <?php foreach ( $recent as $r ) :
+                        $code_s = (string) $r['code'];
+                        $tgt    = $r['target'];
+                        if ( 'post' === $r['type'] ) {
+                            $t   = get_the_title( $r['target'] );
+                            $tgt = $t ? $t : __( 'Deleted', 'romeo-redirect-manager' );
+                        }
+                        $ds = isset( $r['date'] ) ? date_i18n( 'M j', strtotime( $r['date'] ) ) : '';
+                    ?>
+                    <li class="rr-dw-item">
+                        <div class="rr-status-dot code-<?php echo esc_attr( $code_s ); ?>" style="margin-right: 2px;"></div>
+                        <a href="<?php echo esc_url( $manage_url . '&rr_s=' . urlencode($r['slug']) ); ?>" class="rr-dw-slug" title="/<?php echo esc_attr( $r['slug'] ); ?>" data-code="<?php echo esc_attr($code_s); ?>">
+                            <span class="rr-dw-slug-text"><span class="rr-dw-slash">/</span><?php echo esc_html( $r['slug'] ); ?></span>
+                            <span class="dashicons dashicons-external"></span>
+                        </a>
+                        <span class="rr-dw-target" title="<?php echo esc_attr( $tgt ); ?>"><?php echo esc_html( $tgt ); ?></span>
+                        <?php if ( $ds ) : ?><span class="rr-dw-date"><?php echo esc_html( $ds ); ?></span><?php endif; ?>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
 
             <!-- ══ 404 Status ══ -->
             <!-- 404 Status + Toggle -->
@@ -1205,17 +1264,172 @@ class Romerema_Admin {
 
         <script>
         (function(){
+            // Custom Select for Widget
+            function initWidgetSelects() {
+                var widget = document.querySelector('.rr-dw');
+                if (!widget) return;
+                var selects = widget.querySelectorAll('select.rr-select:not(.rr-select-native)');
+                
+                selects.forEach(function(select) {
+                    var wrapper = document.createElement('div');
+                    wrapper.className = 'rr-select-custom ' + select.className;
+                    if (select.id) wrapper.id = 'rr-select-custom-' + select.id;
+                    select.parentNode.insertBefore(wrapper, select);
+                    wrapper.appendChild(select);
+                    select.classList.add('rr-select-native');
+
+                    var trigger = document.createElement('div');
+                    trigger.className = 'rr-select-trigger';
+                    var initialText = select.options[select.selectedIndex] ? select.options[select.selectedIndex].text : 'Select...';
+                    trigger.innerHTML = '<span class="rr-selected-text">' + initialText + '</span><span class="dashicons dashicons-arrow-down-alt2"></span>';
+                    
+                    if (['301','302','307','308'].includes(select.value)) {
+                        trigger.setAttribute('data-code', select.value);
+                    }
+                    wrapper.appendChild(trigger);
+
+                    var menu = document.createElement('div');
+                    menu.className = 'rr-select-dropdown';
+                    Array.from(select.options).forEach(function(option, idx) {
+                        var optDiv = document.createElement('div');
+                        optDiv.className = 'rr-select-option' + (select.selectedIndex === idx ? ' selected' : '');
+                        optDiv.textContent = option.text;
+                        optDiv.dataset.value = option.value;
+                        optDiv.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            select.value = option.value;
+                            trigger.querySelector('.rr-selected-text').textContent = option.text;
+                            
+                            if (['301','302','307','308'].includes(option.value)) {
+                                trigger.setAttribute('data-code', option.value);
+                            } else {
+                                trigger.removeAttribute('data-code');
+                            }
+
+                            menu.classList.remove('show');
+                            trigger.classList.remove('active');
+                            menu.querySelectorAll('.rr-select-option').forEach(function(o) { o.classList.remove('selected'); });
+                            optDiv.classList.add('selected');
+                            select.dispatchEvent(new Event('change', { bubbles: true }));
+                        });
+                        menu.appendChild(optDiv);
+                    });
+                    wrapper.appendChild(menu);
+
+                    trigger.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        document.querySelectorAll('.rr-select-dropdown.show').forEach(function(m) {
+                            if (m !== menu) {
+                                m.classList.remove('show');
+                                m.previousSibling.classList.remove('active');
+                            }
+                        });
+                        menu.classList.toggle('show');
+                        trigger.classList.toggle('active');
+                    });
+                });
+            }
+
+            document.addEventListener('click', function() {
+                document.querySelectorAll('.rr-select-dropdown.show').forEach(function(menu) {
+                    menu.classList.remove('show');
+                    menu.previousSibling.classList.remove('active');
+                });
+            });
+
+            initWidgetSelects();
+
+            var typeSelect = document.getElementById('rr-dw-type');
+            var targetUrl = document.getElementById('rr-dw-url');
+            var postSelector = document.getElementById('rr-dw-post-selector');
+            var selectedPostRow = document.getElementById('rr-dw-selected-post-row');
+            
+            typeSelect.addEventListener('change', function() {
+                if (this.value === 'url') {
+                    targetUrl.classList.remove('rr-dw-hidden');
+                    postSelector.classList.add('rr-dw-hidden');
+                } else {
+                    targetUrl.classList.add('rr-dw-hidden');
+                    postSelector.classList.remove('rr-dw-hidden');
+                }
+            });
+
+            // Post Search
+            var postSearch = document.getElementById('rr-dw-post-search');
+            var postResults = document.getElementById('rr-dw-post-results');
+            var targetPostId = document.getElementById('rr-dw-target-post-id');
+            var selectedPost = document.getElementById('rr-dw-selected-post');
+            var searchTimer;
+
+            postSearch.addEventListener('input', function() {
+                clearTimeout(searchTimer);
+                var q = this.value.trim();
+                if (q.length < 2) {
+                    postResults.classList.add('rr-dw-hidden');
+                    return;
+                }
+
+                searchTimer = setTimeout(function() {
+                    fetch(ajaxurl + '?action=romerema_search_posts&term=' + encodeURIComponent(q) + '&nonce=' + btn.dataset.nonce)
+                    .then(function(r){ return r.json(); })
+                    .then(function(r){
+                        if (r.success && r.data.length) {
+                            var html = '';
+                            r.data.forEach(function(item) {
+                                var capType = item.type.charAt(0).toUpperCase() + item.type.slice(1);
+                                html += '<div class="rr-dw-post-item" data-id="'+item.id+'" data-title="'+item.title+'"><span class="ptype">'+capType+'</span> '+item.title+'</div>';
+                            });
+                            postResults.innerHTML = html;
+                            postResults.classList.remove('rr-dw-hidden');
+                        } else {
+                            postResults.innerHTML = '<div class="rr-dw-post-item" style="cursor:default;opacity:0.6;">No results</div>';
+                            postResults.classList.remove('rr-dw-hidden');
+                        }
+                    });
+                }, 300);
+            });
+
+            postResults.addEventListener('click', function(e) {
+                var item = e.target.closest('.rr-dw-post-item');
+                if (!item || !item.dataset.id) return;
+                
+                targetPostId.value = item.dataset.id;
+                selectedPost.innerHTML = '<span>' + item.dataset.title + '</span><span class="dashicons dashicons-no-alt remove-post"></span>';
+                selectedPostRow.classList.remove('rr-dw-hidden');
+                postSelector.classList.add('rr-dw-hidden');
+                postResults.classList.add('rr-dw-hidden');
+                postSearch.value = '';
+            });
+
+            selectedPostRow.addEventListener('click', function(e) {
+                if (e.target.classList.contains('remove-post')) {
+                    targetPostId.value = '';
+                    selectedPostRow.classList.add('rr-dw-hidden');
+                    postSelector.classList.remove('rr-dw-hidden');
+                }
+            });
+
             var btn = document.getElementById('rr-dw-qa-btn');
             if (!btn) return;
             btn.addEventListener('click', function() {
                 var slug = document.getElementById('rr-dw-slug').value.trim().replace(/^\/+/, '');
-                var url  = document.getElementById('rr-dw-url').value.trim();
+                var type = typeSelect.value;
+                var code = document.getElementById('rr-dw-code').value;
+                var url  = targetUrl.value.trim();
+                var pid  = targetPostId.value;
                 var msg  = document.getElementById('rr-dw-qa-msg');
                 var nonce = btn.dataset.nonce;
 
                 if (!slug) { showMsg('Please enter a slug.', false); return; }
-                if (!url)  { showMsg('Please enter a target URL.', false); return; }
-                if (!/^https?:\/\//.test(url)) { showMsg('URL must start with http:// or https://', false); return; }
+                if (type === 'url' && !url) { showMsg('Please enter a target URL.', false); return; }
+                if (type === 'post' && !pid) { showMsg('Please select a page.', false); return; }
+
+                // Auto-lowercase
+                slug = slug.toLowerCase();
+                if (type === 'url') {
+                    url = url.toLowerCase();
+                    if (!/^https?:\/\//.test(url)) url = 'https://' + url;
+                }
 
                 btn.disabled = true;
                 btn.querySelector('.rr-dw-qa-btn-text').textContent = '...';
@@ -1224,9 +1438,10 @@ class Romerema_Admin {
                 fd.append('action', 'romerema_save_redirect');
                 fd.append('nonce', nonce);
                 fd.append('slug', slug);
-                fd.append('type', 'url');
+                fd.append('type', type);
                 fd.append('target_url', url);
-                fd.append('code', '301');
+                fd.append('target_post_id', pid);
+                fd.append('code', code);
                 fd.append('override', 'false');
 
                 fetch(ajaxurl, { method: 'POST', body: fd })
@@ -1234,8 +1449,49 @@ class Romerema_Admin {
                 .then(function(r){
                     if (r.success) {
                         showMsg('✓ Redirect added!', true);
+                        
+                        // Dynamically update Recently Added list
+                        var list = document.getElementById('rr-dw-recent-list');
+                        if (list) {
+                            var li = document.createElement('li');
+                            li.className = 'rr-dw-item';
+                            li.style.opacity = '0';
+                            li.style.transform = 'translateY(-10px)';
+                            li.style.transition = 'all 0.4s ease';
+                            
+                            var manageUrl = '<?php echo esc_js( $manage_url ); ?>';
+                            var displayTarget = (type === 'post') ? selectedPost.querySelector('span').textContent : url;
+                            var badgeClass = 'rr-dw-b' + code;
+                            
+                            var itemHtml = '<span class="rr-dw-badge ' + badgeClass + '">' + code + '</span>' +
+                                           '<a href="' + manageUrl + '&rr_s=' + encodeURIComponent(slug) + '" class="rr-dw-slug" title="/' + slug + '">' +
+                                           '<span class="rr-dw-slug-text">/' + slug + '</span><span class="dashicons dashicons-external"></span></a>' +
+                                           '<span class="rr-dw-target" title="' + displayTarget + '">' + displayTarget + '</span>' +
+                                           '<span class="rr-dw-date">Just now</span>';
+                            li.innerHTML = itemHtml;
+                            list.insertBefore(li, list.firstChild);
+                            
+                            if (list.children.length > 4) list.removeChild(list.lastChild);
+                            
+                            requestAnimationFrame(function(){
+                                li.style.opacity = '1';
+                                li.style.transform = 'translateY(0)';
+                            });
+                        }
+                        
+                        // Update total count
+                        var totalEl = document.getElementById('rr-dw-total-redirects');
+                        if (totalEl) {
+                            var current = parseInt(totalEl.textContent.replace(/,/g, ''));
+                            totalEl.textContent = (current + 1).toLocaleString();
+                        }
+
+                        // Reset fields
                         document.getElementById('rr-dw-slug').value = '';
-                        document.getElementById('rr-dw-url').value  = '';
+                        targetUrl.value = '';
+                        targetPostId.value = '';
+                        selectedPostRow.classList.add('rr-dw-hidden');
+                        if (type === 'post') postSelector.classList.remove('rr-dw-hidden');
                     } else {
                         showMsg(r.data || 'Error saving.', false);
                     }
@@ -1251,9 +1507,62 @@ class Romerema_Admin {
                 function showMsg(text, ok) {
                     msg.textContent = text;
                     msg.className = 'rr-dw-qa-msg ' + (ok ? 'rr-dw-qa-ok' : 'rr-dw-qa-err');
-                    setTimeout(function(){ msg.className = 'rr-dw-qa-msg hidden'; }, 3500);
+                    setTimeout(function(){ msg.className = 'rr-dw-qa-msg rr-dw-hidden'; }, 3500);
                 }
             });
+
+            // Add on Enter Support
+            [document.getElementById('rr-dw-slug'), document.getElementById('rr-dw-url'), document.getElementById('rr-dw-post-search'), document.getElementById('rr-dw-type'), document.getElementById('rr-dw-code')].forEach(function(el){
+                if (!el) return;
+                el.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        var btn = document.getElementById('rr-dw-qa-btn');
+                        if (btn) btn.click();
+                    }
+                });
+            });
+
+            // Cookie Helpers
+            function setRRCookie(name, value, days) {
+                var expires = "";
+                if (days) {
+                    var date = new Date();
+                    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                    expires = "; expires=" + date.toUTCString();
+                }
+                document.cookie = name + "=" + (value || "") + expires + "; path=/";
+            }
+            function getRRCookie(name) {
+                var nameEQ = name + "=";
+                var ca = document.cookie.split(';');
+                for (var i = 0; i < ca.length; i++) {
+                    var c = ca[i];
+                    while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+                    if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+                }
+                return null;
+            }
+
+            // Collapsible Logic
+            document.querySelectorAll('.rr-dw-toggle-hd').forEach(function(hd) {
+                var targetId = hd.dataset.target;
+                var target = document.getElementById(targetId);
+                if (!target) return;
+
+                // Load state
+                if (getRRCookie('rr_dw_collapsed_' + targetId) === '1') {
+                    target.classList.add('collapsed');
+                    hd.classList.add('collapsed');
+                }
+
+                hd.addEventListener('click', function() {
+                    var isCollapsed = target.classList.toggle('collapsed');
+                    hd.classList.toggle('collapsed');
+                    setRRCookie('rr_dw_collapsed_' + targetId, isCollapsed ? '1' : '0', 30);
+                });
+            });
+        })();
 
             // 404 Toggle
             (function() {
@@ -1285,8 +1594,21 @@ class Romerema_Admin {
                     .catch(function() { toggle.checked = !enabled; });
                 });
             })();
-        })();
         </script>
         <?php
+    }
+
+    private function format_big_number( $n ) {
+        $n = (int) $n;
+        if ( $n >= 1000000000 ) {
+            return round( $n / 1000000000, 1 ) . 'B+';
+        }
+        if ( $n >= 1000000 ) {
+            return round( $n / 1000000, 1 ) . 'M+';
+        }
+        if ( $n >= 1000 ) {
+            return round( $n / 1000, 1 ) . 'k';
+        }
+        return number_format_i18n( $n );
     }
 }

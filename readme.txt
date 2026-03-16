@@ -1,10 +1,10 @@
 === Romeo Redirect Manager ===
 Contributors: harsh98trivedi
-Tags: redirection, redirect, 301, 308, seo
+Tags: redirection, redirect, 301, 308, seo, 404 redirect, broken links, link manager, url shortener, permanent redirect
 Donate link: https://buymeacoffee.com/harshtrivedi
 Requires at least: 5.6
-Tested up to: 6.9
-Stable tag: 1.4.0
+Tested up to: 6.7
+Stable tag: 1.5.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -13,10 +13,21 @@ Modern redirect manager with a beautiful card UI. Supports 301, 302, 307, 308, h
 
 == Description ==
 
-# Redirects – The Modern Way to Manage WordPress Redirects
+# Redirects – The Ultimate Modern Solution for 301, 302, 307, 308 Redirections and 404 Management
 
-**Redirects** is a sleek, lightweight, and powerful solution for managing URL redirections on your WordPress site.
-Built for **SEO experts, bloggers, and developers**, it replaces clunky old tables with a beautiful **card-based dashboard** that makes managing links a joy.
+**Redirects** is a sleek, lightweight, and powerful solution for managing URL redirections and fixing 404 errors on your WordPress site. 
+Optimize your **SEO performance** and improve user experience by preventing broken links and capturing lost traffic.
+Built for **SEO experts, bloggers, and agencies**, it replaces clunky old tables with a beautiful **"App-Grade" card dashboard** that makes link management fast and enjoyable.
+
+### Stop Losing Traffic with Smart Redirects
+Whether you are migrating your site, changing permalink structures, or fixing crawl errors from **Google Search Console**, Redirects provides the most stable and visual way to handle your traffic. 
+
+### Why Choose Redirects for your SEO?
+
+**Modern Card UI**: No more boring spreadsheets. Manage redirects with a visual, interactive card interface designed for high-density management.
+**Full 308, 301, 302, 307 Support**: Future-proof your SEO with **308 Permanent Redirects** (Preserve Method), alongside standard 301, 302, and 307.
+**Smart 404 Capture**: Automatically handle broken links by redirecting them to your homepage, a target URL, or a specific search page.
+**Optimized for Core Web Vitals**: Zero heavy dependencies. Native JavaScript and high-performance database queries ensure your site speed remains top-tier.
 
 ### Why Use Redirects?
 
@@ -89,6 +100,23 @@ Yes. The "Target Type" selector allows you to choose "Internal Post" or "Interna
 8. **Dashboard Widget** — A powerful snapshot on your main WordPress dashboard showing quick-add tools, top hits, and an active 404 handler toggle.
 
 == Changelog ==
+
+= 1.5.1 - 2026-03-16 =
+* **Feature:** Custom Widget Selects — The Dashboard Widget now features the same premium custom select dropdowns as the main plugin.
+* **Feature:** Branded Slashes — Redirect slashes are now color-coded (Blue/Amber/Purple/Pink) across the entire UI for instant status recognition.
+* **UX:** Retractable Sections — Dashboard widget sections are now collapsible and remember their state across sessions (cookie-reliant).
+* **Scaling:** Big Number Formatting — Automatic "Hero Style" formatting (e.g., 200k, 10M+) ensures stats always fit perfectly.
+* **Bulk:** Smart Select All — The bulk actions button now toggles, allowing you to instantly deselect all visible items.
+* **Refinement:** Robust slug truncation and hover-icon visibility for extra-long redirect URLs.
+* **Refinement:** Perfected vertical alignment and centering for all custom dropdowns and indicators.
+* **Feature:** Integrated Search — Clicking a redirect in the widget now takes you directly to the focused card in the manager.
+
+
+= 1.5.0 - 2026-03-16 =
+* **Feature:** Automatic protocol detection — enter "google.com" and it will automatically prefix "https://" for you.
+* **UX:** Improved 404 settings responsivity — vertical stacking on small mobile screens for better thumb reach and clarity.
+* **SEO:** Enhanced plugin metadata and tags for better visibility.
+* **Refinement:** Removed unnecessary animations and hover effects from the Status Codes guide for a cleaner interface.
 
 = 1.4.0 - 2026-03-09 =
 * **Feature:** Added sorting dropdown to instantly sort redirects by Name, Most Hits, Internal Pages, Internal Posts, and External Sites.
