@@ -1,6 +1,6 @@
 === Romeo Redirect Manager ===
 Contributors: harsh98trivedi
-Tags: redirection, redirect, 301, 308, seo, 404 redirect, broken links, link manager, url shortener, permanent redirect
+Tags: redirection, 301, 308, seo, 404-redirect
 Donate link: https://buymeacoffee.com/harshtrivedi
 Requires at least: 5.6
 Tested up to: 6.7
