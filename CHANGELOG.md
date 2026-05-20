@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.5.2 - 2026-05-21
+### 🧪 WordPress 7.0 Compatibility Update
+
+This update ensures compatibility with the upcoming WordPress 7.0 release.
+
+#### 🛠 Improvements
+- **WordPress 7.0 Compatibility**: Updated "Tested up to" compatibility header to `7.0`.
+- **PHP Requirements**: Verified compatibility with PHP 7.4 through PHP 8.x.
+
 ## 1.5.1 - 2026-03-16
 ### 🧪 Dashboard Widget & Pro UI Refinements
 
