@@ -1807,4 +1807,688 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   })();
 
+  // ==========================================================================
+  // Romeo Sitemap Scanner & SEO Inspector Controller (Unified Card UI)
+  // ==========================================================================
+  (function initSitemapScanner() {
+      const scanBtn = document.getElementById('rr-sitemap-scan-btn');
+      if (!scanBtn) return;
+
+      const togglePanelBtn = document.getElementById('rr-sitemap-toggle-btn');
+      const scanPanel = document.getElementById('rr-sitemap-panel');
+      const stopBtn = document.getElementById('rr-sitemap-stop-btn');
+      const resetUrlBtn = document.getElementById('rr-sitemap-reset-url');
+      const urlInput = document.getElementById('rr-sitemap-url-input');
+      const batchSizeSelect = document.getElementById('rr-sitemap-batch-size');
+      const exportBtn = document.getElementById('rr-sitemap-export-btn');
+      const clearBtn = document.getElementById('rr-sitemap-clear-btn');
+      const searchInput = document.getElementById('rr-sitemap-search');
+      const filterBtns = document.querySelectorAll('.rr-filters .rr-filter-btn');
+      const sortSelect = document.getElementById('rr-sitemap-sort-select');
+      const reportSummary = document.getElementById('rr-sitemap-report-summary');
+      const viewBtns = document.querySelectorAll('.rr-view-toggles .rr-view-btn');
+
+      const progressBox = document.getElementById('rr-sitemap-progress-box');
+      const progStatus = document.getElementById('rr-sitemap-prog-status');
+      const progPercent = document.getElementById('rr-sitemap-prog-percent');
+      const barFill = document.getElementById('rr-sitemap-bar-fill');
+      const progCounts = document.getElementById('rr-sitemap-prog-counts');
+      const progTime = document.getElementById('rr-sitemap-prog-time');
+      const scanIcon = document.getElementById('rr-sitemap-scan-icon');
+      const scanBtnText = document.getElementById('rr-sitemap-scan-btn-text');
+
+      const cardGrid = document.getElementById('rr-sitemap-card-grid');
+      const noResultsState = document.getElementById('rr-sitemap-no-results');
+
+      let currentScanData = null;
+      let isScanning = false;
+      let abortRequested = false;
+      let scanTimerInterval = null;
+      let scanStartTime = 0;
+      let activeFilter = 'all';
+      let activeSearch = '';
+      let activeSort = 'default';
+
+      // Toggle configuration panel
+      if (togglePanelBtn && scanPanel) {
+          togglePanelBtn.addEventListener('click', () => {
+              scanPanel.classList.toggle('hidden');
+              if (!scanPanel.classList.contains('hidden')) {
+                  scanPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+              }
+          });
+      }
+
+      // Reset to default WP sitemap
+      if (resetUrlBtn && urlInput) {
+          resetUrlBtn.addEventListener('click', () => {
+              if (window.romerema_vars && window.romerema_vars.default_sitemap) {
+                  urlInput.value = window.romerema_vars.default_sitemap;
+              }
+          });
+      }
+
+      // View Toggles (Card View vs List View)
+      if (viewBtns.length && cardGrid) {
+          viewBtns.forEach(btn => {
+              btn.addEventListener('click', () => {
+                  const view = btn.getAttribute('data-view') || 'card';
+                  viewBtns.forEach(b => b.classList.remove('active'));
+                  btn.classList.add('active');
+                  if (view === 'card') {
+                      cardGrid.classList.remove('list-view');
+                      cardGrid.classList.add('card-view');
+                  } else {
+                      cardGrid.classList.remove('card-view');
+                      cardGrid.classList.add('list-view');
+                  }
+              });
+          });
+      }
+
+      // Load initial stored scan results
+      function loadStoredResults() {
+          if (!window.romerema_vars || !window.romerema_vars.sitemap_nonce) return;
+          const fd = new FormData();
+          fd.append('action', 'romerema_sitemap_get_results');
+          fd.append('nonce', window.romerema_vars.sitemap_nonce);
+
+          fetch(ajaxurl, { method: 'POST', body: fd })
+              .then(r => r.json())
+              .then(res => {
+                  if (res.success && res.data && res.data.items && res.data.items.length > 0) {
+                      currentScanData = res.data;
+                      renderFullUI(currentScanData);
+                  }
+              })
+              .catch(err => console.error('Error loading sitemap results:', err));
+      }
+
+      loadStoredResults();
+
+      // Start Scan Handler
+      scanBtn.addEventListener('click', () => {
+          if (isScanning) return;
+          const sitemapUrl = urlInput.value.trim();
+          if (!sitemapUrl) {
+              alert('Please enter a valid Sitemap URL.');
+              return;
+          }
+
+          startScan(sitemapUrl);
+      });
+
+      // Stop Scan Handler
+      if (stopBtn) {
+          stopBtn.addEventListener('click', () => {
+              if (!isScanning) return;
+              abortRequested = true;
+              stopBtn.textContent = 'Stopping...';
+              stopBtn.disabled = true;
+          });
+      }
+
+      // Clear Results Handler
+      if (clearBtn) {
+          clearBtn.addEventListener('click', () => {
+              if (!confirm('Are you sure you want to clear all stored sitemap scan results?')) return;
+              const fd = new FormData();
+              fd.append('action', 'romerema_sitemap_clear_results');
+              fd.append('nonce', window.romerema_vars.sitemap_nonce);
+
+              fetch(ajaxurl, { method: 'POST', body: fd })
+                  .then(r => r.json())
+                  .then(res => {
+                      if (res.success) {
+                          currentScanData = null;
+                          if (reportSummary) reportSummary.innerHTML = '';
+                          renderCards([]);
+                          if (noResultsState) noResultsState.classList.remove('hidden');
+                          clearBtn.disabled = true;
+                          clearBtn.style.opacity = '0.6';
+                          clearBtn.style.cursor = 'not-allowed';
+                          exportBtn.disabled = true;
+                          exportBtn.style.opacity = '0.6';
+                          exportBtn.style.cursor = 'not-allowed';
+                          if (scanPanel) scanPanel.classList.remove('hidden');
+                      }
+                  });
+          });
+      }
+
+      // Export Issues to CSV
+      if (exportBtn) {
+          exportBtn.addEventListener('click', () => {
+              if (!currentScanData || !currentScanData.items || !currentScanData.items.length) return;
+              exportToCSV(currentScanData.items);
+          });
+      }
+
+      // Search & Filter Events
+      if (searchInput) {
+          searchInput.addEventListener('input', (e) => {
+              activeSearch = e.target.value.trim().toLowerCase();
+              filterAndRenderCards();
+          });
+      }
+
+      if (sortSelect) {
+          sortSelect.addEventListener('change', (e) => {
+              activeSort = e.target.value;
+              filterAndRenderCards();
+          });
+      }
+
+      filterBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+              filterBtns.forEach(b => b.classList.remove('active'));
+              btn.classList.add('active');
+              activeFilter = btn.getAttribute('data-filter') || 'all';
+              filterAndRenderCards();
+          });
+      });
+
+      // Interactive summary chips click handler
+      if (reportSummary) {
+          reportSummary.addEventListener('click', (e) => {
+              const chip = e.target.closest('.rr-summary-chip');
+              if (chip) {
+                  const filterValue = chip.getAttribute('data-filter');
+                  const targetBtn = document.querySelector(`.rr-filters .rr-filter-btn[data-filter="${filterValue}"]`);
+                  if (targetBtn) targetBtn.click();
+              }
+          });
+      }
+
+      // ── Core Scan Runner ──
+      async function startScan(sitemapUrl) {
+          isScanning = true;
+          abortRequested = false;
+          scanBtn.disabled = true;
+          if (stopBtn) {
+              stopBtn.classList.remove('hidden');
+              stopBtn.disabled = false;
+              stopBtn.textContent = 'Stop Scan';
+          }
+          if (scanIcon) {
+              scanIcon.classList.remove('rr-spin-icon-hidden');
+              scanIcon.classList.add('rr-spin-icon');
+          }
+          if (scanBtnText) scanBtnText.textContent = 'Scanning...';
+          if (progressBox) progressBox.classList.remove('hidden');
+          if (noResultsState) noResultsState.classList.add('hidden');
+
+          progStatus.textContent = 'Fetching and parsing XML sitemap...';
+          progPercent.textContent = '0%';
+          barFill.style.width = '0%';
+          progCounts.textContent = '0 / 0 URLs checked';
+
+          scanStartTime = Date.now();
+          scanTimerInterval = setInterval(() => {
+              const elapsedSec = Math.floor((Date.now() - scanStartTime) / 1000);
+              progTime.textContent = elapsedSec + 's elapsed';
+          }, 1000);
+
+          try {
+              // 1. Fetch URLs
+              const fetchFd = new FormData();
+              fetchFd.append('action', 'romerema_sitemap_fetch_urls');
+              fetchFd.append('nonce', window.romerema_vars.sitemap_nonce);
+              fetchFd.append('sitemap_url', sitemapUrl);
+
+              const fetchRes = await fetch(ajaxurl, { method: 'POST', body: fetchFd }).then(r => r.json());
+
+              if (!fetchRes.success || !fetchRes.data || !fetchRes.data.urls || !fetchRes.data.urls.length) {
+                  throw new Error(fetchRes.data || 'No URLs found in the sitemap.');
+              }
+
+              const urls = fetchRes.data.urls;
+              const totalUrls = urls.length;
+              
+              // Smart Adaptive Batch Calculation
+              const mode = batchSizeSelect ? batchSizeSelect.value : 'auto';
+              let dynamicBatchSize = 10;
+              const isAutoMode = (mode === 'auto');
+
+              if (isAutoMode) {
+                  if (totalUrls <= 40) {
+                      dynamicBatchSize = 10;
+                  } else if (totalUrls <= 300) {
+                      dynamicBatchSize = 15;
+                  } else {
+                      dynamicBatchSize = 25;
+                  }
+              } else {
+                  dynamicBatchSize = parseInt(mode, 10) || 10;
+              }
+
+              progStatus.textContent = `Found ${totalUrls} URLs. Starting inspection...`;
+              const allResults = [];
+              let processedCount = 0;
+              let urlIndex = 0;
+              let batchNumber = 1;
+
+              // 2. Process URLs in Dynamic Adaptive Batches
+              while (urlIndex < totalUrls) {
+                  if (abortRequested) {
+                      progStatus.textContent = 'Scan stopped. Saving partial results...';
+                      break;
+                  }
+
+                  const chunkSize = Math.min(dynamicBatchSize, totalUrls - urlIndex);
+                  const currentBatch = urls.slice(urlIndex, urlIndex + chunkSize);
+                  const modeLabel = isAutoMode ? `Smart Auto: ${chunkSize}/req` : `${chunkSize} URLs/batch`;
+                  
+                  progStatus.textContent = `Checking URLs ${urlIndex + 1}–${urlIndex + currentBatch.length} of ${totalUrls} (${modeLabel})...`;
+
+                  const batchStartTime = Date.now();
+                  const batchFd = new FormData();
+                  batchFd.append('action', 'romerema_sitemap_scan_batch');
+                  batchFd.append('nonce', window.romerema_vars.sitemap_nonce);
+                  currentBatch.forEach(u => batchFd.append('urls[]', u));
+
+                  let batchRes;
+                  try {
+                      batchRes = await fetch(ajaxurl, { method: 'POST', body: batchFd }).then(r => r.json());
+                  } catch (e) {
+                      batchRes = { success: false };
+                  }
+
+                  const batchDuration = (Date.now() - batchStartTime) / 1000;
+
+                  if (batchRes && batchRes.success && batchRes.data && batchRes.data.results) {
+                      allResults.push(...batchRes.data.results);
+                      processedCount += currentBatch.length;
+
+                      // Smart Auto Adaptive Throttling
+                      if (isAutoMode) {
+                          if (batchDuration > 4.5 && dynamicBatchSize > 5) {
+                              // Server is taking longer, throttle down for stability
+                              dynamicBatchSize = Math.max(5, dynamicBatchSize - 5);
+                          } else if (batchDuration < 1.2 && dynamicBatchSize < 25 && totalUrls - urlIndex > 30) {
+                              // Server is super fast, scale up throughput
+                              dynamicBatchSize = Math.min(25, dynamicBatchSize + 5);
+                          }
+                      }
+                  } else {
+                      currentBatch.forEach(u => {
+                          allResults.push({
+                              url: u,
+                              initial_code: 0,
+                              final_code: 0,
+                              final_url: u,
+                              hops: 0,
+                              chain: [],
+                              issues: ['error'],
+                              is_healthy: false,
+                              error_message: 'Request failed.'
+                          });
+                      });
+                      processedCount += currentBatch.length;
+                      if (isAutoMode && dynamicBatchSize > 5) {
+                          dynamicBatchSize = 5; // throttle down on failure
+                      }
+                  }
+
+                  urlIndex += chunkSize;
+                  batchNumber++;
+
+                  const percent = Math.min(100, Math.round((processedCount / totalUrls) * 100));
+                  barFill.style.width = percent + '%';
+                  progPercent.textContent = percent + '%';
+                  progCounts.textContent = `${processedCount} / ${totalUrls} URLs checked`;
+              }
+
+              // 3. Save Results
+              progStatus.textContent = 'Analyzing redirect chains & saving results...';
+              const saveFd = new FormData();
+              saveFd.append('action', 'romerema_sitemap_save_results');
+              saveFd.append('nonce', window.romerema_vars.sitemap_nonce);
+              saveFd.append('sitemap_url', sitemapUrl);
+              saveFd.append('total_urls', allResults.length);
+              saveFd.append('results', JSON.stringify(allResults));
+
+              const saveRes = await fetch(ajaxurl, { method: 'POST', body: saveFd }).then(r => r.json());
+
+              if (saveRes.success && saveRes.data && saveRes.data.data) {
+                  currentScanData = saveRes.data.data;
+                  renderFullUI(currentScanData);
+                  progStatus.textContent = abortRequested ? 'Scan stopped. Partial results saved.' : '✓ Scan completed successfully!';
+              } else {
+                  throw new Error('Failed to save scan results.');
+              }
+
+          } catch (err) {
+              alert('Sitemap Scan Error: ' + err.message);
+              progStatus.textContent = 'Error during scan: ' + err.message;
+          } finally {
+              isScanning = false;
+              clearInterval(scanTimerInterval);
+              scanBtn.disabled = false;
+              if (stopBtn) stopBtn.classList.add('hidden');
+              if (scanIcon) {
+                  scanIcon.classList.remove('rr-spin-icon');
+                  scanIcon.classList.add('rr-spin-icon-hidden');
+              }
+              if (scanBtnText) scanBtnText.textContent = 'Start Sitemap Scan';
+              setTimeout(() => {
+                  if (progressBox) progressBox.classList.add('hidden');
+              }, 3000);
+          }
+      }
+
+      // ── UI Rendering ──
+      function renderFullUI(data) {
+          if (!data || !data.items) return;
+
+          // Enable actions
+          if (clearBtn) {
+              clearBtn.disabled = false;
+              clearBtn.style.opacity = '1';
+              clearBtn.style.cursor = 'pointer';
+          }
+          if (exportBtn) {
+              exportBtn.disabled = false;
+              exportBtn.style.opacity = '1';
+              exportBtn.style.cursor = 'pointer';
+          }
+
+          filterAndRenderCards();
+      }
+
+      function filterAndRenderCards() {
+          if (!currentScanData || !currentScanData.items) return;
+
+          let filtered = currentScanData.items.slice();
+
+          // Filter
+          if (activeFilter === 'issues') {
+              filtered = filtered.filter(item => !item.is_healthy);
+          } else if (activeFilter === '404') {
+              filtered = filtered.filter(item => item.issues && item.issues.includes('404'));
+          } else if (activeFilter === '301') {
+              filtered = filtered.filter(item => item.issues && item.issues.includes('301'));
+          } else if (activeFilter === '302') {
+              filtered = filtered.filter(item => item.issues && (item.issues.includes('302') || item.issues.includes('307') || item.issues.includes('308')));
+          } else if (activeFilter === 'chain') {
+              filtered = filtered.filter(item => item.issues && item.issues.includes('chain'));
+          } else if (activeFilter === 'external') {
+              filtered = filtered.filter(item => item.issues && item.issues.includes('external'));
+          } else if (activeFilter === 'duplicate') {
+              filtered = filtered.filter(item => item.issues && item.issues.includes('duplicate'));
+          } else if (activeFilter === '200' || activeFilter === 'healthy') {
+              filtered = filtered.filter(item => item.is_healthy);
+          }
+
+          // Search
+          if (activeSearch) {
+              filtered = filtered.filter(item => {
+                  const u = (item.url || '').toLowerCase();
+                  const dest = (item.final_url || '').toLowerCase();
+                  const code = String(item.initial_code || '');
+                  return u.includes(activeSearch) || dest.includes(activeSearch) || code.includes(activeSearch);
+              });
+          }
+
+          // Sort
+          if (activeSort === 'issues-first') {
+              filtered.sort((a, b) => (a.is_healthy === b.is_healthy ? 0 : a.is_healthy ? 1 : -1));
+          } else if (activeSort === 'code-desc') {
+              filtered.sort((a, b) => (b.initial_code || 0) - (a.initial_code || 0));
+          } else if (activeSort === 'name-asc') {
+              filtered.sort((a, b) => (a.url || '').localeCompare(b.url || ''));
+          }
+
+          // Update Summary Chips Bar
+          updateReportSummary(currentScanData.items, filtered.length);
+
+          // Render Cards
+          if (filtered.length === 0) {
+              cardGrid.innerHTML = '';
+              if (noResultsState) {
+                  noResultsState.classList.remove('hidden');
+                  noResultsState.querySelector('h3').textContent = 'No matching sitemap URLs found';
+                  noResultsState.querySelector('p').textContent = 'Try adjusting your search query or filter selection.';
+                  cardGrid.appendChild(noResultsState);
+              }
+          } else {
+              if (noResultsState) noResultsState.classList.add('hidden');
+              renderCards(filtered);
+          }
+      }
+
+      function updateReportSummary(allItems, filteredCount) {
+          if (!reportSummary) return;
+
+          let c404 = 0, c301 = 0, c302 = 0, cChain = 0, c200 = 0;
+          allItems.forEach(item => {
+              if (item.issues && item.issues.includes('404')) c404++;
+              if (item.issues && item.issues.includes('301')) c301++;
+              if (item.issues && (item.issues.includes('302') || item.issues.includes('307') || item.issues.includes('308'))) c302++;
+              if (item.issues && item.issues.includes('chain')) cChain++;
+              if (item.is_healthy) c200++;
+          });
+
+          reportSummary.innerHTML = `Showing <strong>${filteredCount}</strong> sitemap URLs ` +
+              `<span class="rr-summary-chips">` +
+              `<span class="rr-summary-chip" data-filter="404" style="--chip-color: #ef4444;">404: <strong>${c404}</strong></span>` +
+              `<span class="rr-summary-chip" data-filter="301" style="--chip-color: #3b82f6;">301: <strong>${c301}</strong></span>` +
+              `<span class="rr-summary-chip" data-filter="302" style="--chip-color: #f59e0b;">302: <strong>${c302}</strong></span>` +
+              `<span class="rr-summary-chip" data-filter="chain" style="--chip-color: #f97316;">Chains: <strong>${cChain}</strong></span>` +
+              `<span class="rr-summary-chip" data-filter="200" style="--chip-color: #10b981;">200 OK: <strong>${c200}</strong></span>` +
+              `</span>`;
+      }
+
+      function renderCards(items) {
+          if (!cardGrid) return;
+          cardGrid.innerHTML = '';
+
+          items.forEach((item, index) => {
+              // Extract display slug / path from source URL
+              let displaySlug = 'home';
+              try {
+                  const parsed = new URL(item.url);
+                  displaySlug = parsed.pathname.replace(/^\/+|\/+$/g, '');
+                  if (!displaySlug) displaySlug = 'home';
+                  if (parsed.search) displaySlug += parsed.search;
+              } catch(e) {
+                  displaySlug = item.url;
+              }
+
+              const card = document.createElement('div');
+              card.className = 'rr-card';
+              card.id = `sm-card-${index}`;
+              card.setAttribute('data-code', item.initial_code || '200');
+              card.style.position = 'relative';
+
+              const initCode = item.initial_code || 200;
+              const finalCode = item.final_code || 200;
+
+              // Status dot class & label
+              let codeClass = 'code-' + initCode;
+              let statusLabel = initCode + ' Redirect';
+              if (initCode === 200) {
+                  codeClass = 'code-200';
+                  statusLabel = '200 OK Clean';
+              } else if (initCode === 404) {
+                  codeClass = 'code-404';
+                  statusLabel = '404 Not Found';
+              } else if (initCode === 301) {
+                  codeClass = 'code-301';
+                  statusLabel = '301 Permanent';
+              } else if (initCode === 302 || initCode === 307) {
+                  codeClass = 'code-302';
+                  statusLabel = initCode + ' Temporary';
+              } else if (initCode === 308) {
+                  codeClass = 'code-308';
+                  statusLabel = '308 Permanent';
+              }
+
+              // Target label & display text
+              let targetLabel = 'Destination URL';
+              let targetDisplay = item.final_url || item.url;
+              if (item.is_healthy) {
+                  targetLabel = 'Sitemap URL Status';
+                  targetDisplay = '200 OK — Clean & Healthy';
+              } else if (item.issues && item.issues.includes('404')) {
+                  targetLabel = 'Broken Link';
+                  targetDisplay = '404 Not Found (Broken in Sitemap)';
+              } else if (item.hops > 1) {
+                  targetLabel = `Redirect Chain (${item.hops} hops)`;
+                  targetDisplay = item.final_url || item.url;
+              } else if (item.issues && item.issues.includes('external')) {
+                  targetLabel = 'External Redirect';
+                  targetDisplay = item.final_url;
+              }
+
+              // Diagnosis tag in footer
+              let diagnosisTagHtml = '';
+              if (item.issues && item.issues.includes('chain')) {
+                  diagnosisTagHtml = '<div class="rr-override-indicator" style="background:#fff7ed; border-color:#fed7aa;"><div class="rr-override-dot" style="background:#f97316;"></div><span style="color:#c2410c;">Chain (' + item.hops + ' hops)</span></div>';
+              } else if (item.issues && item.issues.includes('external')) {
+                  diagnosisTagHtml = '<div class="rr-override-indicator" style="background:#f0fdfa; border-color:#99f6e4;"><div class="rr-override-dot" style="background:#0d9488;"></div><span style="color:#0f766e;">External</span></div>';
+              } else if (item.issues && item.issues.includes('duplicate')) {
+                  diagnosisTagHtml = '<div class="rr-override-indicator" style="background:#faf5ff; border-color:#e9d5ff;"><div class="rr-override-dot" style="background:#9333ea;"></div><span style="color:#7e22ce;">Duplicate Target</span></div>';
+              } else if (item.is_healthy) {
+                  diagnosisTagHtml = '<div class="rr-override-indicator" style="background:#f0fdf4; border-color:#bbf7d0;"><div class="rr-override-dot" style="background:#16a34a;"></div><span style="color:#15803d;">Clean</span></div>';
+              }
+
+              card.innerHTML = `
+                  <!-- Slug row: /slug text + inline copy button -->
+                  <div class="rr-card-slug-wrap">
+                      <span class="rr-card-slug" title="${escapeHtml(item.url)}" data-copy="${escapeHtml(item.url)}">
+                          <span class="slash">/</span><span class="rr-slug-text">${escapeHtml(displaySlug)}</span>
+                      </span>
+                      <button class="rr-slug-copy rr-copy-btn" data-copy="${escapeHtml(item.url)}" title="Copy source URL">
+                          <span class="dashicons dashicons-admin-page"></span>
+                      </button>
+                  </div>
+
+                  <!-- Info: target URL + copy -->
+                  <div class="rr-card-info">
+                      <div class="rr-card-info-inner">
+                          <span class="rr-info-label">${escapeHtml(targetLabel)}</span>
+                          <span class="rr-info-value" title="${escapeHtml(targetDisplay)}" data-copy="${escapeHtml(item.final_url || item.url)}">${escapeHtml(targetDisplay)}</span>
+                      </div>
+                      <button class="rr-inline-copy rr-copy-btn" data-copy="${escapeHtml(item.final_url || item.url)}" title="Copy URL">
+                          <span class="dashicons dashicons-admin-page"></span>
+                      </button>
+                  </div>
+
+                  <!-- Footer: status + diagnosis tag -->
+                  <div class="rr-card-footer">
+                      <div class="rr-status-block">
+                          <div class="rr-status-dot ${codeClass}"></div>
+                          <span class="rr-status-label">${escapeHtml(statusLabel)}</span>
+                      </div>
+                      ${diagnosisTagHtml}
+                  </div>
+
+                  <!-- Bottom bar: status text LEFT ......... [open | Fix / Redirect RIGHT] -->
+                  <div class="rr-card-bottom">
+                      <div style="font-size: 11.5px; color: #94a3b8; font-weight: 500;">
+                          ${item.is_healthy ? '<span style="color:#16a34a;">● Verified Clean</span>' : '<span style="color:#f0405f;">● Action Recommended</span>'}
+                      </div>
+                      <div class="rr-card-actions-group">
+                          <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="rr-action-btn" title="Open URL in new tab">
+                              <span class="dashicons dashicons-external"></span>
+                          </a>
+                          ${!item.is_healthy ? `
+                              <button type="button" class="rr-action-btn rr-fix-btn" title="Create / Fix Redirect in Romeo" data-url="${escapeHtml(item.url)}" data-target="${escapeHtml(item.final_url || window.romerema_vars.site_url)}">
+                                  <span class="dashicons dashicons-plus-alt2" style="color:var(--rr-primary);"></span>
+                              </button>
+                          ` : ''}
+                      </div>
+                  </div>
+              `;
+
+              // Hook copy buttons inside card
+              card.querySelectorAll('.rr-copy-btn').forEach(cBtn => {
+                  cBtn.addEventListener('click', (e) => {
+                      e.stopPropagation();
+                      copyToClipboard(cBtn.getAttribute('data-copy') || '', cBtn);
+                  });
+              });
+
+              // Hook fix / create redirect button
+              const fixBtn = card.querySelector('.rr-fix-btn');
+              if (fixBtn) {
+                  fixBtn.addEventListener('click', (e) => {
+                      e.stopPropagation();
+                      createDirectRedirect(fixBtn.getAttribute('data-url'), fixBtn.getAttribute('data-target'), fixBtn);
+                  });
+              }
+
+              cardGrid.appendChild(card);
+          });
+      }
+
+      // One-click Create/Fix Redirect AJAX
+      function createDirectRedirect(sourceUrl, targetUrl, btn) {
+          if (!window.romerema_vars || !window.romerema_vars.sitemap_nonce) return;
+          btn.disabled = true;
+
+          const fd = new FormData();
+          fd.append('action', 'romerema_sitemap_create_redirect');
+          fd.append('nonce', window.romerema_vars.sitemap_nonce);
+          fd.append('source_url', sourceUrl);
+          fd.append('target_url', targetUrl);
+          fd.append('code', '301');
+
+          fetch(ajaxurl, { method: 'POST', body: fd })
+              .then(r => r.json())
+              .then(res => {
+                  if (res.success) {
+                      btn.innerHTML = '<span class="dashicons dashicons-yes" style="color:#10b981;"></span>';
+                      btn.title = 'Redirect rule created!';
+                      btn.style.borderColor = '#10b981';
+                      btn.style.background = '#f0fdf4';
+                  } else {
+                      btn.disabled = false;
+                      alert(res.data || 'Failed to create redirect.');
+                  }
+              })
+              .catch(err => {
+                  btn.disabled = false;
+                  alert('Network error: ' + err.message);
+              });
+      }
+
+      // Export items array to CSV
+      function exportToCSV(items) {
+          const headers = ['Source URL', 'Initial Code', 'Final Code', 'Final URL', 'Hops', 'Issues', 'Is Healthy', 'Is External'];
+          const rows = items.map(item => [
+              `"${(item.url || '').replace(/"/g, '""')}"`,
+              item.initial_code || 0,
+              item.final_code || 0,
+              `"${(item.final_url || '').replace(/"/g, '""')}"`,
+              item.hops || 0,
+              `"${(item.issues || []).join(', ')}"`,
+              item.is_healthy ? 'Yes' : 'No',
+              item.is_external ? 'Yes' : 'No'
+          ]);
+
+          const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+          const encodedUri = encodeURI(csvContent);
+          const link = document.createElement('a');
+          link.setAttribute('href', encodedUri);
+          link.setAttribute('download', `sitemap-issues-${new Date().toISOString().slice(0, 10)}.csv`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+      }
+
+      function escapeHtml(str) {
+          if (!str) return '';
+          return String(str)
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&#039;');
+      }
+  })();
+
 });
+
+

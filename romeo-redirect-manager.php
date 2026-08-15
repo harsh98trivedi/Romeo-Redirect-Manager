@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Romeo Redirect Manager
- * Description: A modern, lightweight redirect manager. Redirect slugs to external URLs or internal posts with style.
- * Version:     1.5.2
+ * Description: A modern, lightweight redirect manager with XML sitemap scanning, full 301/302/307/308 support, 404 capture, and SEO analytics.
+ * Version:     1.6.0
  * Author:      Harsh Trivedi
  * Author URI:  https://harsh98trivedi.github.io/
  * Text Domain: romeo-redirect-manager
@@ -13,9 +13,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-// Autoloader - simplified manual require for now strictly for this task scope
+if ( ! defined( 'ROMEREMA_VERSION' ) ) {
+	define( 'ROMEREMA_VERSION', '1.6.0' );
+}
+
+// Autoloader - simplified manual require for plugin classes
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-romeo-admin.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-romeo-redirect.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-romeo-sitemap-scanner.php';
 
 if ( ! class_exists( 'Romerema_Plugin' ) ) {
 
@@ -37,6 +42,7 @@ if ( ! class_exists( 'Romerema_Plugin' ) ) {
 			// Initialize Admin
 			if ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
 				new Romerema_Admin();
+				new Romerema_Sitemap_Scanner();
 			}
 
 			// Initialize Frontend Redirects

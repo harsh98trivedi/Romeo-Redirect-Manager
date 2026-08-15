@@ -49,6 +49,15 @@ class Romerema_Admin {
 
         add_submenu_page(
             'romeo-redirect-manager',
+            __( 'Sitemap Scanner', 'romeo-redirect-manager' ),
+            __( 'Sitemap Scanner', 'romeo-redirect-manager' ),
+            'manage_options',
+            'romeo-redirect-manager-sitemap',
+            array( $this, 'render_sitemap_page' )
+        );
+
+        add_submenu_page(
+            'romeo-redirect-manager',
             __( '404 Settings', 'romeo-redirect-manager' ),
             __( '404 Settings', 'romeo-redirect-manager' ),
             'manage_options',
@@ -61,28 +70,60 @@ class Romerema_Admin {
         $main_file = dirname( __FILE__ ) . '/../romeo-redirect-manager.php';
 
         // Load CSS on ALL admin pages so the sidebar icon is styled everywhere.
-        wp_enqueue_style( 'romeo-admin-css', plugins_url( 'assets/css/admin.css', $main_file ), array(), '1.4.0' );
+        wp_enqueue_style( 'romeo-admin-css', plugins_url( 'assets/css/admin.css', $main_file ), array(), '1.6.0' );
 
         // Load JS only on plugin pages (heavy, not needed elsewhere).
         if ( strpos( $hook, 'romeo-redirect-manager' ) === false ) {
             return;
         }
 
-        wp_enqueue_script( 'romeo-admin-js', plugins_url( 'assets/js/admin.js', $main_file ), array(), '1.4.0', true );
+        wp_enqueue_script( 'romeo-admin-js', plugins_url( 'assets/js/admin.js', $main_file ), array(), '1.6.0', true );
+
+        $default_sitemap = class_exists( 'Romerema_Sitemap_Scanner' ) ? Romerema_Sitemap_Scanner::get_default_sitemap_url() : home_url( '/wp-sitemap.xml' );
 
         wp_localize_script( 'romeo-admin-js', 'romerema_vars', array(
-            'nonce' => wp_create_nonce( 'romerema_save_nonce' ),
-            'delete_nonce' => wp_create_nonce( 'romerema_delete_nonce' ),
-            'import_nonce' => wp_create_nonce( 'romerema_import_nonce' ),
-            'export_nonce' => wp_create_nonce( 'romerema_export_nonce' ),
-            'check_nonce'  => wp_create_nonce( 'romerema_check_nonce' ),
+            'nonce'            => wp_create_nonce( 'romerema_save_nonce' ),
+            'delete_nonce'     => wp_create_nonce( 'romerema_delete_nonce' ),
+            'import_nonce'     => wp_create_nonce( 'romerema_import_nonce' ),
+            'export_nonce'     => wp_create_nonce( 'romerema_export_nonce' ),
+            'check_nonce'      => wp_create_nonce( 'romerema_check_nonce' ),
             'save_404_nonce'   => wp_create_nonce( 'romerema_save_404_nonce' ),
-            'toggle_404_nonce' => wp_create_nonce( 'romerema_toggle_404_nonce' )
+            'toggle_404_nonce' => wp_create_nonce( 'romerema_toggle_404_nonce' ),
+            'sitemap_nonce'    => wp_create_nonce( 'romerema_sitemap_nonce' ),
+            'default_sitemap'  => $default_sitemap,
+            'admin_url'        => admin_url(),
+            'site_url'         => home_url(),
         ));
     }
 
     public function render_admin_page() {
-        $redirects = get_option( $this->option_key, array() );
+        $raw_redirects = get_option( $this->option_key, array() );
+        $redirects = array();
+        $needs_repair = false;
+        
+        if ( is_array( $raw_redirects ) ) {
+            foreach ( $raw_redirects as $r ) {
+                if ( is_array( $r ) && ! empty( $r['slug'] ) ) {
+                    if ( ! isset( $r['target'] ) && isset( $r['target_url'] ) ) {
+                        $r['target'] = $r['target_url'];
+                        $needs_repair = true;
+                    }
+                    if ( ! isset( $r['date'] ) && isset( $r['created_at'] ) ) {
+                        $r['date'] = $r['created_at'];
+                        $needs_repair = true;
+                    }
+                    if ( ! isset( $r['type'] ) ) {
+                        $r['type'] = 'url';
+                        $needs_repair = true;
+                    }
+                    $redirects[] = $r;
+                }
+            }
+            if ( $needs_repair || array_values( $raw_redirects ) !== $raw_redirects ) {
+                update_option( $this->option_key, $redirects );
+            }
+        }
+        
         $redirects = array_reverse( $redirects ); // Newest first
         $logo_url = plugins_url( 'assets/images/icon.svg', dirname( __FILE__ ) . '/../romeo-redirect-manager.php' );
         ?>
@@ -219,22 +260,24 @@ class Romerema_Admin {
                     <button class="rr-filter-btn" data-filter="308">308</button>
                 </div>
 
-                <div class="rr-view-toggles" style="display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 20px; align-items: center;">
-                    <div class="rr-sort-wrapper">
-                        <select id="rr-sort-select" class="rr-input" style="width: 100%; height: 38px; margin: 0; font-size: 13px;">
-                            <option value="date-desc"><?php esc_html_e( 'Newest First', 'romeo-redirect-manager' ); ?></option>
-                            <option value="name-asc"><?php esc_html_e( 'Name (A-Z)', 'romeo-redirect-manager' ); ?></option>
-                            <option value="hits-desc"><?php esc_html_e( 'Most Hits', 'romeo-redirect-manager' ); ?></option>
-                            <option value="type-page"><?php esc_html_e( 'Internal Pages First', 'romeo-redirect-manager' ); ?></option>
-                            <option value="type-post"><?php esc_html_e( 'Internal Posts First', 'romeo-redirect-manager' ); ?></option>
-                            <option value="type-url"><?php esc_html_e( 'External Sites First', 'romeo-redirect-manager' ); ?></option>
-                        </select>
+                <!-- Unified Toolbar Row: Summary Left | Sort & View Controls Right -->
+                <div class="rr-toolbar-row">
+                    <div id="rr-report-summary"></div>
+                    <div class="rr-view-toggles">
+                        <div class="rr-sort-wrapper">
+                            <select id="rr-sort-select" class="rr-input" style="width: 100%; height: 38px; margin: 0; font-size: 13px;">
+                                <option value="date-desc"><?php esc_html_e( 'Newest First', 'romeo-redirect-manager' ); ?></option>
+                                <option value="name-asc"><?php esc_html_e( 'Name (A-Z)', 'romeo-redirect-manager' ); ?></option>
+                                <option value="hits-desc"><?php esc_html_e( 'Most Hits', 'romeo-redirect-manager' ); ?></option>
+                                <option value="type-page"><?php esc_html_e( 'Internal Pages First', 'romeo-redirect-manager' ); ?></option>
+                                <option value="type-post"><?php esc_html_e( 'Internal Posts First', 'romeo-redirect-manager' ); ?></option>
+                                <option value="type-url"><?php esc_html_e( 'External Sites First', 'romeo-redirect-manager' ); ?></option>
+                            </select>
+                        </div>
+                        <button class="rr-view-btn active" data-view="card" title="Card View"><span class="dashicons dashicons-grid-view"></span></button>
+                        <button class="rr-view-btn" data-view="list" title="List View"><span class="dashicons dashicons-list-view"></span></button>
                     </div>
-                    <button class="rr-view-btn active" data-view="card" title="Card View"><span class="dashicons dashicons-grid-view"></span></button>
-                    <button class="rr-view-btn" data-view="list" title="List View"><span class="dashicons dashicons-list-view"></span></button>
                 </div>
-
-                <div id="rr-report-summary"></div>
 
                 <div class="rr-grid card-view" id="rr-card-grid">
                     <?php 
@@ -249,34 +292,42 @@ class Romerema_Admin {
 
                     <?php if ( ! empty( $redirects ) ) : ?>
                         <?php foreach ( $redirects as $r ) : 
-                            $data_attr = $r;
-                            $target_display = $r['target'];
-                            $target_label = 'URL Redirect';
+                            if ( ! is_array( $r ) ) continue;
                             
-                            if( 'post' === $r['type'] ) {
+                            $slug_val   = isset( $r['slug'] ) ? $r['slug'] : '';
+                            $type_val   = isset( $r['type'] ) ? $r['type'] : 'url';
+                            $code_val   = isset( $r['code'] ) ? intval( $r['code'] ) : 301;
+                            $id_val     = isset( $r['id'] ) ? $r['id'] : uniqid();
+                            $target_val = isset( $r['target'] ) ? $r['target'] : ( isset( $r['target_url'] ) ? $r['target_url'] : '' );
+                            $data_attr  = $r;
+                            $data_attr['target'] = $target_val;
+                            $target_display = $target_val;
+                            $target_label   = 'URL Redirect';
+                            
+                            if ( 'post' === $type_val ) {
                                 $target_label = 'Page Redirect';
-                                $title = get_the_title( $r['target'] );
-                                $ptype_raw = get_post_type( $r['target'] );
+                                $title = get_the_title( intval( $target_val ) );
+                                $ptype_raw = get_post_type( intval( $target_val ) );
                                 $detailed_type = $ptype_raw === 'page' ? 'page' : 'post';
                                 // If post is deleted, handle gracefully
-                                if( $title ) {
+                                if ( $title ) {
                                     $target_display = $title;
-                                    $full_target = get_permalink( $r['target'] );
+                                    $full_target = get_permalink( intval( $target_val ) );
                                 } else {
-                                    $target_display = '(Deleted Post ID: ' . $r['target'] . ')';
+                                    $target_display = '(Deleted Post ID: ' . intval( $target_val ) . ')';
                                     $full_target = '#';
                                     $detailed_type = 'post'; // fallback
                                 }
                                 $data_attr['target_title'] = $title;
                             } else {
-                                $full_target = $r['target'];
+                                $full_target = $target_val;
                                 $detailed_type = 'url';
                             }
                             
-                            $full_source = home_url( '/' . $r['slug'] );
-                            $added_ts = isset($r['date']) ? strtotime($r['date']) : 0;
+                            $full_source = home_url( '/' . $slug_val );
+                            $added_ts = isset( $r['date'] ) ? strtotime( $r['date'] ) : ( isset( $r['created_at'] ) ? strtotime( $r['created_at'] ) : 0 );
                         ?>
-                            <div class="rr-card" id="card-<?php echo esc_attr( $r['id'] ); ?>" data-slug="<?php echo esc_attr( strtolower($r['slug'] ) ); ?>" data-target="<?php echo esc_attr( strtolower( $target_display ) ); ?>" data-code="<?php echo esc_attr( $r['code'] ); ?>" data-hits="<?php echo intval( $r['hits'] ?? 0 ); ?>" data-ptype="<?php echo esc_attr( $detailed_type ); ?>" data-added="<?php echo esc_attr( $added_ts ); ?>" style="position:relative;">
+                            <div class="rr-card" id="card-<?php echo esc_attr( $id_val ); ?>" data-slug="<?php echo esc_attr( strtolower( $slug_val ) ); ?>" data-target="<?php echo esc_attr( strtolower( $target_display ) ); ?>" data-code="<?php echo esc_attr( $code_val ); ?>" data-hits="<?php echo intval( $r['hits'] ?? 0 ); ?>" data-ptype="<?php echo esc_attr( $detailed_type ); ?>" data-added="<?php echo esc_attr( $added_ts ); ?>" style="position:relative;">
                                 
                                 <?php 
                                     $is_override = isset($r['override']) && ( $r['override'] === true || $r['override'] === '1' || $r['override'] === 'true' );
@@ -294,8 +345,8 @@ class Romerema_Admin {
 
                                 <!-- Slug row: /slug text + inline copy button -->
                                 <div class="rr-card-slug-wrap">
-                                    <span class="rr-card-slug" id="rr-slug-<?php echo esc_attr( $r['id'] ); ?>" title="<?php echo esc_attr( $full_source ); ?>" data-copy="<?php echo esc_url( $full_source ); ?>">
-                                        <span class="slash">/</span><span class="rr-slug-text"><?php echo esc_html( $r['slug'] ); ?></span>
+                                    <span class="rr-card-slug" id="rr-slug-<?php echo esc_attr( $id_val ); ?>" title="<?php echo esc_attr( $full_source ); ?>" data-copy="<?php echo esc_url( $full_source ); ?>">
+                                        <span class="slash">/</span><span class="rr-slug-text"><?php echo esc_html( $slug_val ); ?></span>
                                     </span>
                                     <button class="rr-slug-copy rr-copy-btn" data-copy="<?php echo esc_url( $full_source ); ?>" title="<?php esc_attr_e('Copy source URL', 'romeo-redirect-manager'); ?>">
                                         <span class="dashicons dashicons-admin-page"></span>
@@ -316,8 +367,8 @@ class Romerema_Admin {
                                 <!-- Footer: status + hits -->
                                 <div class="rr-card-footer">
                                     <div class="rr-status-block">
-                                        <div class="rr-status-dot code-<?php echo esc_attr( $r['code'] ); ?>"></div>
-                                        <span class="rr-status-label"><?php echo esc_attr( $r['code'] ); ?> Redirect</span>
+                                        <div class="rr-status-dot code-<?php echo esc_attr( $code_val ); ?>"></div>
+                                        <span class="rr-status-label"><?php echo esc_attr( $code_val ); ?> Redirect</span>
                                     </div>
                                     <div class="rr-hits-badge">
                                         <span class="rr-hits-num"><?php echo isset($r['hits']) ? esc_html( $this->format_big_number( $r['hits'] ) ) : '0'; ?></span>
@@ -329,15 +380,15 @@ class Romerema_Admin {
                                         <span>Overridden</span>
                                     </div>
                                     <?php endif; ?>
-                                    <?php if( isset( $r['date'] ) ) : ?>
-                                    <div class="rr-date-badge"><?php echo esc_html( date_i18n( get_option('date_format'), strtotime($r['date']) ) ); ?></div>
+                                    <?php if( $added_ts > 0 ) : ?>
+                                    <div class="rr-date-badge"><?php echo esc_html( date_i18n( get_option('date_format'), $added_ts ) ); ?></div>
                                     <?php endif; ?>
                                 </div>
 
                                 <!-- Bottom bar: [☐ checkbox LEFT] ......... [open | edit | delete RIGHT] -->
                                 <div class="rr-card-bottom">
                                     <label class="rr-checkbox-wrapper rr-card-select" title="Select">
-                                        <input type="checkbox" class="rr-bulk-checkbox" value="<?php echo esc_attr( $r['id'] ); ?>">
+                                        <input type="checkbox" class="rr-bulk-checkbox" value="<?php echo esc_attr( $id_val ); ?>">
                                         <span class="rr-checkbox-style"></span>
                                     </label>
                                     <div class="rr-card-actions-group">
@@ -347,19 +398,19 @@ class Romerema_Admin {
                                         <button 
                                             class="rr-action-btn rr-edit-btn" 
                                             title="Edit"
-                                            data-id="<?php echo esc_attr( $r['id'] ); ?>"
-                                            data-slug="<?php echo esc_attr( $r['slug'] ); ?>"
-                                            data-type="<?php echo esc_attr( $r['type'] ); ?>"
-                                            data-target="<?php echo esc_attr( $r['target'] ); ?>"
-                                            data-code="<?php echo esc_attr( $r['code'] ); ?>"
+                                            data-id="<?php echo esc_attr( $id_val ); ?>"
+                                            data-slug="<?php echo esc_attr( $slug_val ); ?>"
+                                            data-type="<?php echo esc_attr( $type_val ); ?>"
+                                            data-target="<?php echo esc_attr( $target_val ); ?>"
+                                            data-code="<?php echo esc_attr( $code_val ); ?>"
                                             data-override="<?php echo isset($r['override']) && $r['override'] ? '1' : '0'; ?>"
-                                            <?php if( 'post' === $r['type'] && isset($data_attr['target_title']) ) : ?>
+                                            <?php if( 'post' === $type_val && isset($data_attr['target_title']) ) : ?>
                                             data-target-title="<?php echo esc_attr( $data_attr['target_title'] ); ?>"
                                             <?php endif; ?>
                                         >
                                             <span class="dashicons dashicons-edit"></span>
                                         </button>
-                                        <button onclick="rrDelete('<?php echo esc_attr( $r['id'] ); ?>')" class="rr-action-btn rr-delete-action-btn" title="Delete">
+                                        <button onclick="rrDelete('<?php echo esc_attr( $id_val ); ?>')" class="rr-action-btn rr-delete-action-btn" title="Delete">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
@@ -501,6 +552,7 @@ class Romerema_Admin {
         $option_404_target  = get_option( 'romeo_redirect_404_target', '' );
         $option_404_type    = get_option( 'romeo_redirect_404_type', 'url' );
         $option_404_post_id = get_option( 'romeo_redirect_404_post_id', 0 );
+        $logo_url           = plugins_url( 'assets/images/icon.svg', dirname( __FILE__ ) . '/../romeo-redirect-manager.php' );
         
         $post_title = '';
         if ( $option_404_post_id ) {
@@ -511,20 +563,47 @@ class Romerema_Admin {
         }
         ?>
         <div class="rr-wrapper">
-             <div class="rr-header">
-                <div>
-                    <h1><?php esc_html_e( '404 Settings', 'romeo-redirect-manager' ); ?></h1>
-                    <small><?php esc_html_e( 'Manage how 404 errors are handled.', 'romeo-redirect-manager' ); ?></small>
+            <!-- Header -->
+            <div class="rr-header">
+                <div class="rr-brand">
+                    <div class="rr-logo-icon">
+                        <img src="<?php echo esc_url( $logo_url ); ?>" alt="Romeo Redirects Manager" style="width:48px;height:48px;">
+                    </div>
+                    <div>
+                        <h1>Redirection Romeo</h1>
+                        <small>by <a href="https://harsh98trivedi.github.io/" target="_blank" style="color:#f0405f; text-decoration:none; font-weight:600;">Harsh Trivedi</a></small>
+                    </div>
+                </div>
+                <!-- Action Buttons: Rate, Donate, Sitemap, Redirects -->
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                    <a href="https://wordpress.org/support/plugin/romeo-redirect-manager/reviews/#new-post" target="_blank" rel="noopener noreferrer" class="rr-btn rr-btn-secondary header-action-btn" style="text-decoration:none; display:inline-flex; align-items:center;">
+                        <span class="dashicons dashicons-star-filled" style="font-size:16px; width:16px; height:16px; color:#fbbf24;"></span> <span class="rr-btn-text"><?php esc_html_e( 'Rate', 'romeo-redirect-manager' ); ?></span>
+                    </a>
+                    <a href="https://buymeacoffee.com/harshtrivedi" target="_blank" rel="noopener noreferrer" class="rr-btn rr-btn-secondary header-action-btn" style="text-decoration:none; display:inline-flex; align-items:center;">
+                        <span class="dashicons dashicons-heart" style="font-size:18px; width:18px; height:18px; color:#ff4d6d;"></span> <span class="rr-btn-text"><?php esc_html_e( 'Donate', 'romeo-redirect-manager' ); ?></span>
+                    </a>
+                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=romeo-redirect-manager-sitemap' ) ); ?>" class="rr-btn rr-btn-secondary header-action-btn" style="text-decoration:none; display:inline-flex; align-items:center;">
+                        <span class="dashicons dashicons-admin-site-alt3" style="font-size:18px; width:18px; height:18px;"></span> <span class="rr-btn-text"><?php esc_html_e( 'Sitemap Scanner', 'romeo-redirect-manager' ); ?></span>
+                    </a>
+                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=romeo-redirect-manager' ) ); ?>" class="rr-btn rr-btn-outline" style="text-decoration:none; display:inline-flex; align-items:center;">
+                        <span class="dashicons dashicons-list-view" style="font-size:18px; width:18px; height:18px;"></span> <span class="rr-btn-text"><?php esc_html_e( 'All Redirects', 'romeo-redirect-manager' ); ?></span>
+                    </a>
                 </div>
             </div>
 
-            <div class="rr-creator rr-404-container">
-
+            <!-- 404 Settings Card -->
+            <div class="rr-creator rr-404-container" style="max-width: 860px; margin: 20px auto 40px;">
+                
                 <!-- ── Enable / Disable Toggle ── -->
-                <div class="rr-404-toggle-row" id="rr-404-toggle-row">
-                    <div class="rr-404-toggle-info">
-                        <span class="rr-404-toggle-title"><?php esc_html_e( '404 Handler', 'romeo-redirect-manager' ); ?></span>
-                        <span class="rr-404-toggle-desc" id="rr-404-toggle-desc"><?php echo $option_404_enabled ? esc_html__( 'Active — 404s are being redirected', 'romeo-redirect-manager' ) : esc_html__( 'Inactive — 404s load normally', 'romeo-redirect-manager' ); ?></span>
+                <div class="rr-404-toggle-row" id="rr-404-toggle-row" style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; background: #f8fafc; border-radius: 16px; margin-bottom: 28px; border: 1px solid #e2e8f0;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="dashicons dashicons-shield" style="color: #f0405f; font-size: 22px; width: 22px; height: 22px;"></span>
+                            <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: #1e293b;"><?php esc_html_e( '404 Error Auto-Handler', 'romeo-redirect-manager' ); ?></h3>
+                        </div>
+                        <p class="rr-404-toggle-desc" id="rr-404-toggle-desc" style="margin: 6px 0 0 30px; font-size: 13.5px; color: #64748b;">
+                            <?php echo $option_404_enabled ? esc_html__( 'Active — 404 Not Found errors are automatically captured and redirected.', 'romeo-redirect-manager' ) : esc_html__( 'Inactive — 404 errors will display the standard theme 404 page.', 'romeo-redirect-manager' ); ?>
+                        </p>
                     </div>
                     <label class="rr-toggle-switch" title="<?php esc_attr_e( 'Enable / disable 404 redirect', 'romeo-redirect-manager' ); ?>">
                         <input type="checkbox" id="rr-404-enabled-check" <?php checked( $option_404_enabled, '1' ); ?> data-nonce="<?php echo esc_attr( wp_create_nonce( 'romerema_toggle_404_nonce' ) ); ?>">
@@ -532,66 +611,231 @@ class Romerema_Admin {
                     </label>
                 </div>
 
-                <h3><?php esc_html_e( 'Default 404 Redirect', 'romeo-redirect-manager' ); ?></h3>
-                <p class="rr-404-description">
-                    <?php esc_html_e( 'You can choose to redirect all 404 (Not Found) errors to a specific specific URL, such as your homepage or a custom search page. If left empty, the default 404 behavior will be used.', 'romeo-redirect-manager' ); ?>
-                </p>
+                <div style="margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 6px; font-size: 18px; font-weight: 700; color: #1e293b;"><?php esc_html_e( 'Default 404 Fallback Destination', 'romeo-redirect-manager' ); ?></h3>
+                    <p class="rr-404-description" style="margin: 0; font-size: 14px; color: #64748b; line-height: 1.6;">
+                        <?php esc_html_e( 'You can choose to redirect all 404 (Not Found) errors to a specific URL, such as your homepage, an existing landing page, or a custom external URL. If disabled or left empty, the standard theme 404 template will load.', 'romeo-redirect-manager' ); ?>
+                    </p>
+                </div>
                 
                 <form id="rr-404-form">
                     
-                    <div class="rr-segmented-control">
-                        <div class="rr-segment-btn <?php echo ($option_404_type === 'home') ? 'active' : ''; ?>" data-value="home">
-                            <span class="dashicons dashicons-admin-home"></span> <?php esc_html_e( 'To Homepage', 'romeo-redirect-manager' ); ?>
-                        </div>
-                        <div class="rr-segment-btn <?php echo ($option_404_type === 'url') ? 'active' : ''; ?>" data-value="url">
-                            <span class="dashicons dashicons-admin-site"></span> <?php esc_html_e( 'External URL', 'romeo-redirect-manager' ); ?>
-                        </div>
-                        <div class="rr-segment-btn <?php echo ($option_404_type === 'post') ? 'active' : ''; ?>" data-value="post">
-                            <span class="dashicons dashicons-admin-post"></span> <?php esc_html_e( 'Existing Page', 'romeo-redirect-manager' ); ?>
-                        </div>
+                    <!-- Segmented Destination Filter Buttons -->
+                    <div class="rr-filters rr-404-filters" style="display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap;">
+                        <button type="button" class="rr-filter-btn rr-segment-btn <?php echo ( 'home' === $option_404_type ) ? 'active' : ''; ?>" data-value="home">
+                            <span class="dashicons dashicons-admin-home" style="font-size:15px; width:15px; height:15px; vertical-align:text-top;"></span> <?php esc_html_e( 'To Homepage', 'romeo-redirect-manager' ); ?>
+                        </button>
+                        <button type="button" class="rr-filter-btn rr-segment-btn <?php echo ( 'url' === $option_404_type ) ? 'active' : ''; ?>" data-value="url">
+                            <span class="dashicons dashicons-admin-site" style="font-size:15px; width:15px; height:15px; vertical-align:text-top;"></span> <?php esc_html_e( 'External URL', 'romeo-redirect-manager' ); ?>
+                        </button>
+                        <button type="button" class="rr-filter-btn rr-segment-btn <?php echo ( 'post' === $option_404_type ) ? 'active' : ''; ?>" data-value="post">
+                            <span class="dashicons dashicons-admin-page" style="font-size:15px; width:15px; height:15px; vertical-align:text-top;"></span> <?php esc_html_e( 'Existing Page', 'romeo-redirect-manager' ); ?>
+                        </button>
                         <input type="hidden" name="type" id="rr-input-type" value="<?php echo esc_attr( $option_404_type ); ?>">
                     </div>
 
                     <!-- Input Area -->
                     <div class="rr-404-input-wrapper">
                         
-                        <div id="rr-view-home" class="<?php echo ($option_404_type !== 'home') ? 'hidden' : ''; ?>">
-                            <label class="rr-form-label"><?php esc_html_e( 'Homepage URL', 'romeo-redirect-manager' ); ?></label>
-                            <input class="rr-input" type="text" disabled value="<?php echo esc_url( home_url('/') ); ?>" style="background: #f8fafc; color: #94a3b8;">
-                            <p class="rr-form-help"><?php esc_html_e( 'Redirects all 404 traffic to your homepage.', 'romeo-redirect-manager' ); ?></p>
+                        <!-- Homepage View -->
+                        <div id="rr-view-home" class="<?php echo ( 'home' !== $option_404_type ) ? 'hidden' : ''; ?>">
+                            <div class="rr-form-group">
+                                <label class="rr-label"><?php esc_html_e( 'Homepage URL', 'romeo-redirect-manager' ); ?></label>
+                                <div class="rr-input-group">
+                                    <div class="rr-prefix-box"><span class="dashicons dashicons-admin-home" style="font-size:20px;width:20px;height:20px;"></span></div>
+                                    <input class="rr-input" type="text" disabled value="<?php echo esc_url( home_url( '/' ) ); ?>" style="background: #f8fafc; color: #64748b; font-weight: 500;">
+                                </div>
+                                <p class="rr-form-help" style="margin-top: 8px; font-size: 13px; color: #94a3b8;"><?php esc_html_e( 'Redirects all 404 traffic to your website homepage.', 'romeo-redirect-manager' ); ?></p>
+                            </div>
                         </div>
 
-                        <!-- URL View -->
-                        <div id="rr-view-url" class="<?php echo ($option_404_type !== 'url') ? 'hidden' : ''; ?>">
-                            <label class="rr-form-label"><?php esc_html_e( 'Destination URL', 'romeo-redirect-manager' ); ?></label>
-                            <input class="rr-input" type="text" name="url_404" placeholder="https://example.com/404-page" value="<?php echo esc_attr( $option_404_target ); ?>">
-                             <p class="rr-form-help"><?php esc_html_e( 'Redirects all 404 traffic to this external URL.', 'romeo-redirect-manager' ); ?></p>
+                        <!-- External URL View -->
+                        <div id="rr-view-url" class="<?php echo ( 'url' !== $option_404_type ) ? 'hidden' : ''; ?>">
+                            <div class="rr-form-group">
+                                <label class="rr-label"><?php esc_html_e( 'Destination URL', 'romeo-redirect-manager' ); ?></label>
+                                <div class="rr-input-group">
+                                    <div class="rr-prefix-box"><span class="dashicons dashicons-admin-links" style="font-size:20px;width:20px;height:20px;"></span></div>
+                                    <input class="rr-input" type="text" name="url_404" placeholder="https://example.com/404-fallback" value="<?php echo esc_attr( $option_404_target ); ?>">
+                                </div>
+                                <p class="rr-form-help" style="margin-top: 8px; font-size: 13px; color: #94a3b8;"><?php esc_html_e( 'Redirects all 404 traffic to this custom URL.', 'romeo-redirect-manager' ); ?></p>
+                            </div>
                         </div>
 
-                        <!-- Post View -->
-                        <div id="rr-view-post" class="<?php echo ($option_404_type !== 'post') ? 'hidden' : ''; ?>" style="position:relative;">
-                            
-                            <select name="target_post_id" class="rr-input">
-                                <option value="0"><?php esc_html_e( 'Select a page...', 'romeo-redirect-manager' ); ?></option>
-                                <?php 
-                                $pages = get_pages(); 
-                                foreach ( $pages as $page ) {
-                                    $selected = ( intval($option_404_post_id) === $page->ID ) ? 'selected' : '';
-                                    echo '<option value="' . esc_attr( $page->ID ) . '" ' . $selected . '>' . esc_html( $page->post_title ) . '</option>';
-                                }
-                                ?>
-                            </select>
-                             <p class="rr-form-help"><?php esc_html_e( 'Redirects all 404 traffic to this internal page.', 'romeo-redirect-manager' ); ?></p>
+                        <!-- Post/Page View -->
+                        <div id="rr-view-post" class="<?php echo ( 'post' !== $option_404_type ) ? 'hidden' : ''; ?>">
+                            <div class="rr-form-group">
+                                <label class="rr-label"><?php esc_html_e( 'Select Target Page', 'romeo-redirect-manager' ); ?></label>
+                                <select name="target_post_id" class="rr-select" style="width: 100%; height: 52px; border-radius: 14px; border: 1.5px solid #e2e8f0; font-family: 'Poppins', sans-serif; font-size: 15px; padding: 0 18px; color: #1a1a1a;">
+                                    <option value="0"><?php esc_html_e( 'Select a published page...', 'romeo-redirect-manager' ); ?></option>
+                                    <?php 
+                                    $pages = get_pages( array( 'post_status' => 'publish' ) ); 
+                                    foreach ( $pages as $page ) {
+                                        $selected = ( intval( $option_404_post_id ) === $page->ID ) ? 'selected' : '';
+                                        echo '<option value="' . esc_attr( $page->ID ) . '" ' . $selected . '>' . esc_html( $page->post_title ) . '</option>';
+                                    }
+                                    ?>
+                                </select>
+                                <p class="rr-form-help" style="margin-top: 8px; font-size: 13px; color: #94a3b8;"><?php esc_html_e( 'Redirects all 404 traffic to this internal WordPress page.', 'romeo-redirect-manager' ); ?></p>
+                            </div>
                         </div>
 
                     </div>
                     
-                    <p class="rr-form-help main-help"><?php esc_html_e( 'Leave all fields empty to disable the 404 redirect behavior.', 'romeo-redirect-manager' ); ?></p>
-
-                    <div class="rr-form-actions">
-                         <button type="submit" id="rr-save-404-btn" class="rr-btn rr-btn-save"><?php esc_html_e( 'Save 404 Settings', 'romeo-redirect-manager' ); ?></button>
+                    <div class="rr-form-actions" style="margin-top: 28px; display: flex; justify-content: flex-end;">
+                         <button type="submit" id="rr-save-404-btn" class="rr-btn rr-btn-save" style="min-width: 180px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                             <span class="dashicons dashicons-saved"></span>
+                             <span id="rr-save-404-text"><?php esc_html_e( 'Save 404 Settings', 'romeo-redirect-manager' ); ?></span>
+                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+        <?php
+    }
+
+    public function render_sitemap_page() {
+        $scanner = new Romerema_Sitemap_Scanner();
+        $stored = $scanner->get_stored_results();
+        $default_sitemap = Romerema_Sitemap_Scanner::get_default_sitemap_url();
+        $logo_url = plugins_url( 'assets/images/icon.svg', dirname( __FILE__ ) . '/../romeo-redirect-manager.php' );
+        $has_results = ! empty( $stored ) && ! empty( $stored['items'] );
+        ?>
+        <div class="rr-wrapper">
+            <!-- Header -->
+            <div class="rr-header">
+                <div class="rr-brand">
+                    <div class="rr-logo-icon">
+                        <img src="<?php echo esc_url( $logo_url ); ?>" alt="Romeo Redirects Manager" style="width:48px;height:48px;">
+                    </div>
+                    <div>
+                        <h1>Redirection Romeo</h1>
+                        <small>by <a href="https://harsh98trivedi.github.io/" target="_blank" style="color:#f0405f; text-decoration:none; font-weight:600;">Harsh Trivedi</a></small>
+                    </div>
+                </div>
+                <!-- Action Buttons: Rate/Donate/Export/Clear/New Scan -->
+                <div style="display: flex; gap: 8px;">
+                    <a href="https://wordpress.org/support/plugin/romeo-redirect-manager/reviews/#new-post" target="_blank" rel="noopener noreferrer" class="rr-btn rr-btn-secondary header-action-btn" style="text-decoration:none; display:inline-flex; align-items:center;">
+                        <span class="dashicons dashicons-star-filled" style="font-size:16px; width:16px; height:16px; color:#fbbf24;"></span> <span class="rr-btn-text"><?php esc_html_e( 'Rate', 'romeo-redirect-manager' ); ?></span>
+                    </a>
+                    <a href="https://buymeacoffee.com/harshtrivedi" target="_blank" rel="noopener noreferrer" class="rr-btn rr-btn-secondary header-action-btn" style="text-decoration:none; display:inline-flex; align-items:center;">
+                        <span class="dashicons dashicons-heart" style="font-size:18px; width:18px; height:18px; color:#ff4d6d;"></span> <span class="rr-btn-text"><?php esc_html_e( 'Donate', 'romeo-redirect-manager' ); ?></span>
+                    </a>
+                    <button id="rr-sitemap-export-btn" class="rr-btn rr-btn-secondary header-action-btn" <?php echo ! $has_results ? 'disabled style="opacity:0.6; cursor:not-allowed;"' : ''; ?>>
+                        <span class="dashicons dashicons-download" style="font-size:18px; width:18px; height:18px;"></span> <span class="rr-btn-text"><?php esc_html_e( 'Export', 'romeo-redirect-manager' ); ?></span>
+                    </button>
+                    <button id="rr-sitemap-clear-btn" class="rr-btn rr-btn-secondary header-action-btn" <?php echo ! $has_results ? 'disabled style="opacity:0.6; cursor:not-allowed;"' : ''; ?>>
+                        <span class="dashicons dashicons-trash" style="font-size:18px; width:18px; height:18px;"></span> <span class="rr-btn-text"><?php esc_html_e( 'Clear Results', 'romeo-redirect-manager' ); ?></span>
+                    </button>
+                    <button id="rr-sitemap-toggle-btn" class="rr-btn rr-btn-outline">
+                        <span class="dashicons dashicons-admin-site-alt3" style="font-size:18px; width:18px; height:18px;"></span> <span class="rr-btn-text"><?php esc_html_e( 'Scan XML Sitemap', 'romeo-redirect-manager' ); ?></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Creator / Scan Configuration Panel -->
+            <div id="rr-sitemap-panel" class="rr-creator <?php echo $has_results ? 'hidden' : ''; ?>">
+                <h3 id="rr-modal-title"><?php esc_html_e( 'XML Sitemap Scanner & SEO Inspector', 'romeo-redirect-manager' ); ?></h3>
+                
+                <form id="rr-sitemap-form" onsubmit="return false;">
+                    <div class="rr-form-row">
+                        <!-- Sitemap URL Input -->
+                        <div class="rr-form-group" style="flex: 2;">
+                            <label class="rr-label"><?php esc_html_e( 'XML Sitemap URL', 'romeo-redirect-manager' ); ?></label>
+                            <div class="rr-input-group">
+                                <div class="rr-prefix-box">
+                                    <span class="dashicons dashicons-admin-site-alt3" style="font-size: 20px; width: 20px; height: 20px;"></span>
+                                </div>
+                                <input class="rr-input" type="url" id="rr-sitemap-url-input" value="<?php echo esc_attr( ! empty( $stored['sitemap_url'] ) ? $stored['sitemap_url'] : $default_sitemap ); ?>" placeholder="<?php echo esc_attr( $default_sitemap ); ?>" required>
+                            </div>
+                        </div>
+
+                        <!-- Scan Speed & Concurrency Mode -->
+                        <div class="rr-form-group" style="flex: 1.2;">
+                            <label class="rr-label" style="display:flex; justify-content:space-between; align-items:center;">
+                                <span><?php esc_html_e( 'Scan Speed & Mode', 'romeo-redirect-manager' ); ?></span>
+                                <span style="font-size:11px; font-weight:600; color:#10b981; background:#ecfdf5; padding:1px 6px; border-radius:10px;">⚡ Auto-Optimized</span>
+                            </label>
+                            <select id="rr-sitemap-batch-size" class="rr-select" style="width: 100%; height: 50px; border-radius: 14px; border: 1.5px solid #e2e8f0; font-family: 'Poppins', sans-serif; font-size: 13.5px; padding: 0 14px;">
+                                <option value="auto" selected><?php esc_html_e( 'Smart Auto (Adaptive Speed - Recommended)', 'romeo-redirect-manager' ); ?></option>
+                                <option value="25"><?php esc_html_e( 'Turbo Fast (25 URLs/req — VPS & Cloud)', 'romeo-redirect-manager' ); ?></option>
+                                <option value="10"><?php esc_html_e( 'Balanced (10 URLs/req — Standard)', 'romeo-redirect-manager' ); ?></option>
+                                <option value="5"><?php esc_html_e( 'Safe & Gentle (5 URLs/req — Shared Hosting)', 'romeo-redirect-manager' ); ?></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Live Scanning Progress Box inside Panel -->
+                    <div id="rr-sitemap-progress-box" class="rr-sitemap-progress-box hidden" style="margin-top: 16px;">
+                        <div class="rr-sitemap-prog-header">
+                            <span id="rr-sitemap-prog-status" class="rr-sitemap-prog-status"><?php esc_html_e( 'Preparing sitemap...', 'romeo-redirect-manager' ); ?></span>
+                            <span id="rr-sitemap-prog-percent" class="rr-sitemap-prog-percent">0%</span>
+                        </div>
+                        <div class="rr-sitemap-bar-track">
+                            <div id="rr-sitemap-bar-fill" class="rr-sitemap-bar-fill" style="width: 0%;"></div>
+                        </div>
+                        <div class="rr-sitemap-prog-footer">
+                            <span id="rr-sitemap-prog-counts"><?php esc_html_e( '0 / 0 URLs checked', 'romeo-redirect-manager' ); ?></span>
+                            <span id="rr-sitemap-prog-time">0s elapsed</span>
+                        </div>
+                    </div>
+
+                    <div class="rr-form-actions" style="margin-top: 18px;">
+                        <button type="button" id="rr-sitemap-reset-url" class="rr-btn rr-btn-cancel"><?php esc_html_e( 'Auto-Detect URL', 'romeo-redirect-manager' ); ?></button>
+                        <button type="button" id="rr-sitemap-stop-btn" class="rr-btn rr-btn-cancel hidden"><?php esc_html_e( 'Stop Scan', 'romeo-redirect-manager' ); ?></button>
+                        <button type="button" id="rr-sitemap-scan-btn" class="rr-btn rr-btn-save">
+                            <span class="dashicons dashicons-update-alt rr-spin-icon-hidden" id="rr-sitemap-scan-icon"></span>
+                            <span id="rr-sitemap-scan-btn-text"><?php esc_html_e( 'Start Sitemap Scan', 'romeo-redirect-manager' ); ?></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- List / Card View -->
+            <div data-view="card">
+                <!-- Search Bar (Centered Big Pill) -->
+                <div class="rr-search-container">
+                    <span class="dashicons dashicons-search rr-search-icon"></span>
+                    <input type="text" id="rr-sitemap-search" class="rr-search-input" placeholder="<?php esc_attr_e( 'Type to search sitemap redirects & URLs...', 'romeo-redirect-manager' ); ?>">
+                </div>
+
+                <!-- Filter Pills (Centered) -->
+                <div class="rr-filters" style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; justify-content: center;">
+                    <button class="rr-filter-btn active" data-filter="all">All</button>
+                    <button class="rr-filter-btn" data-filter="issues"><?php esc_html_e( 'Issues Only', 'romeo-redirect-manager' ); ?></button>
+                    <button class="rr-filter-btn" data-filter="404">404</button>
+                    <button class="rr-filter-btn" data-filter="301">301</button>
+                    <button class="rr-filter-btn" data-filter="302">302</button>
+                    <button class="rr-filter-btn" data-filter="chain"><?php esc_html_e( 'Chains', 'romeo-redirect-manager' ); ?></button>
+                    <button class="rr-filter-btn" data-filter="external"><?php esc_html_e( 'External', 'romeo-redirect-manager' ); ?></button>
+                    <button class="rr-filter-btn" data-filter="duplicate"><?php esc_html_e( 'Duplicates', 'romeo-redirect-manager' ); ?></button>
+                    <button class="rr-filter-btn" data-filter="200">200 OK</button>
+                </div>
+
+                <!-- Unified Toolbar Row: Summary Left | Sort & View Controls Right -->
+                <div class="rr-toolbar-row">
+                    <div id="rr-sitemap-report-summary"></div>
+                    <div class="rr-view-toggles">
+                        <div class="rr-sort-wrapper">
+                            <select id="rr-sitemap-sort-select" class="rr-input" style="width: 100%; height: 38px; margin: 0; font-size: 13px;">
+                                <option value="default"><?php esc_html_e( 'Default Order', 'romeo-redirect-manager' ); ?></option>
+                                <option value="issues-first"><?php esc_html_e( 'Issues First', 'romeo-redirect-manager' ); ?></option>
+                                <option value="code-desc"><?php esc_html_e( 'Status Code (High-Low)', 'romeo-redirect-manager' ); ?></option>
+                                <option value="name-asc"><?php esc_html_e( 'Name (A-Z)', 'romeo-redirect-manager' ); ?></option>
+                            </select>
+                        </div>
+                        <button class="rr-view-btn active" data-view="card" title="Card View"><span class="dashicons dashicons-grid-view"></span></button>
+                        <button class="rr-view-btn" data-view="list" title="List View"><span class="dashicons dashicons-list-view"></span></button>
+                    </div>
+                </div>
+
+                <!-- Cards Grid -->
+                <div class="rr-grid card-view" id="rr-sitemap-card-grid">
+                    <div id="rr-sitemap-no-results" class="rr-empty-state <?php echo $has_results ? 'hidden' : ''; ?>">
+                        <span class="dashicons dashicons-search"></span>
+                        <h3><?php esc_html_e( 'No sitemap URLs scanned', 'romeo-redirect-manager' ); ?></h3>
+                        <p><?php esc_html_e( 'Click "Scan XML Sitemap" above to start analyzing your sitemap.', 'romeo-redirect-manager' ); ?></p>
+                    </div>
+                </div>
             </div>
         </div>
         <?php
@@ -1244,16 +1488,40 @@ class Romerema_Admin {
                     </label>
                     <a href="<?php echo esc_url( $settings_url ); ?>" class="rr-dw-404-edit"><?php esc_html_e( 'Config', 'romeo-redirect-manager' ); ?></a>
                 </div>
+            </div>
 
+            <!-- ══ Sitemap Status ══ -->
+            <?php
+            $sitemap_results = get_option( 'romeo_sitemap_scan_results', array() );
+            $sitemap_issues  = isset( $sitemap_results['issues_count'] ) ? intval( $sitemap_results['issues_count'] ) : 0;
+            $sitemap_total   = isset( $sitemap_results['total_urls'] ) ? intval( $sitemap_results['total_urls'] ) : 0;
+            $sitemap_url_page = admin_url( 'admin.php?page=romeo-redirect-manager-sitemap' );
+            ?>
+            <div class="rr-dw-sitemap <?php echo $sitemap_issues > 0 ? 'rr-dw-sm-warn' : ( $sitemap_total > 0 ? 'rr-dw-sm-ok' : 'rr-dw-sm-none' ); ?>" style="display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:8px; margin-top:10px; font-size:12px;">
+                <span class="dashicons <?php echo $sitemap_issues > 0 ? 'dashicons-warning' : ( $sitemap_total > 0 ? 'dashicons-yes-alt' : 'dashicons-admin-site-alt3' ); ?>" style="font-size:16px; width:16px; height:16px; color:<?php echo $sitemap_issues > 0 ? '#d97706' : ( $sitemap_total > 0 ? '#16a34a' : '#64748b' ); ?>;"></span>
+                <span style="color:#1e293b; font-weight:500;"><?php
+                    if ( $sitemap_issues > 0 ) {
+                        printf( esc_html__( '%d sitemap issues detected', 'romeo-redirect-manager' ), $sitemap_issues );
+                    } elseif ( $sitemap_total > 0 ) {
+                        printf( esc_html__( 'Sitemap healthy (%d URLs clean)', 'romeo-redirect-manager' ), $sitemap_total );
+                    } else {
+                        esc_html_e( 'Sitemap not scanned yet', 'romeo-redirect-manager' );
+                    }
+                ?></span>
+                <a href="<?php echo esc_url( $sitemap_url_page ); ?>" class="rr-dw-sm-link" style="margin-left:auto; font-weight:600; font-size:11.5px; text-decoration:none; color:#f0405f;">
+                    <?php echo $sitemap_issues > 0 ? esc_html__( 'View Issues &rarr;', 'romeo-redirect-manager' ) : esc_html__( 'Scan &rarr;', 'romeo-redirect-manager' ); ?>
+                </a>
             </div>
 
             <?php endif; // $total > 0 ?>
-
 
             <!-- ══ Footer ══ -->
             <div class="rr-dw-footer">
                 <a href="<?php echo esc_url( $manage_url ); ?>" class="rr-dw-foot-link">
                     <span class="dashicons dashicons-randomize"></span> <?php esc_html_e( 'All Redirects', 'romeo-redirect-manager' ); ?>
+                </a>
+                <a href="<?php echo esc_url( $sitemap_url_page ); ?>" class="rr-dw-foot-link">
+                    <span class="dashicons dashicons-admin-site-alt3"></span> <?php esc_html_e( 'Sitemap Scanner', 'romeo-redirect-manager' ); ?>
                 </a>
                 <a href="<?php echo esc_url( $new_url ); ?>" class="rr-dw-foot-link rr-dw-foot-new">
                     <span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Create Redirect', 'romeo-redirect-manager' ); ?>

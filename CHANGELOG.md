@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.6.0 - 2026-08-15
+### 🗺️ XML Sitemap Scanner & Full Mobile Overhaul (WordPress 7.0.4 Ready)
+
+This major release introduces automated XML Sitemap scanning and link health auditing, single-click redirect auto-healing, and a full mobile responsive design.
+
+#### ✨ New Features
+- **XML Sitemap Scanner & Auditor**: Automatically audit WordPress and third-party XML sitemaps to detect 404 broken links, 301/302 redirects, redirect chains, external domain leaks, and duplicate destinations.
+- **Smart Auto Adaptive Scan Speed**: Client-side adaptive batch calculation and latency throttling that dynamically adjusts scan requests to keep server load near zero across shared, VPS, and cloud hosts.
+- **One-Click Auto-Fix**: Instantly create redirects for flagged sitemap issues directly from issue cards with auto-healing and normalization.
+- **Auto-Closing Admin Notices**: Real-time notifications automatically update and dismiss themselves once all detected sitemap errors are resolved.
+
+#### 🛠 Improvements & Fixes
+- **WordPress 7.0.4 Compatibility**: Fully tested, validated, and certified compatible with WordPress 7.0.4 and PHP 8.x.
+- **Complete Mobile & Tablet Responsiveness**: Re-engineered headers, creator panels, toolbars, and action buttons for fluid responsiveness on mobile phones and tablets.
+- **Standardized UI Typography & Dashicons**: Replaced raw emoji dropdown glyphs with clean, sharp typography, standardized 16px Dashicon dimensions, and consistent gap spacing across all views.
+- **Dashboard Widget Enhancement**: Added real-time sitemap health status indicators, responsive layout adjustments, and smooth iOS toggle switches.
+- **Unified 404 Auto-Handler**: Segmented fallback selector and prominent toggle state handling for error capture.
+
 ## 1.5.2 - 2026-05-21
 ### 🧪 WordPress 7.0 Compatibility Update
 
