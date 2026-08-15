@@ -68,9 +68,9 @@ Don't let visitors hit a dead end. Configure exactly what happens when a 404 err
 
 ### 📥 Download
 
-[![Download](https://img.shields.io/badge/Download-v1.5.2-brightgreen.svg)](https://github.com/harsh98trivedi/Romeo-Redirect-Manager/releases/download/1.5.2/romeo-redirect-manager.zip)
+[![Download](https://img.shields.io/badge/Download-v1.6.0-brightgreen.svg)](https://github.com/harsh98trivedi/Romeo-Redirect-Manager/releases/download/1.6.0/romeo-redirect-manager.zip)
 
-👉 [**Click here to Download**](https://github.com/harsh98trivedi/Romeo-Redirect-Manager/releases/download/1.5.2/romeo-redirect-manager.zip)
+👉 [**Click here to Download v1.6.0**](https://github.com/harsh98trivedi/Romeo-Redirect-Manager/releases/download/1.6.0/romeo-redirect-manager.zip)
 
 ### From WordPress Admin
 1. Download the latest release `.zip` file from the link above
