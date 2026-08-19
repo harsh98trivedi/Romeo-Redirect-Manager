@@ -12,7 +12,7 @@ svn/
 │   └── screenshot-*.jpg
 ├── trunk/                   # Main development branch (all current plugin files)
 └── tags/                    # Versioned releases
-    └── 1.6.0/               # v1.6.0 release
+    └── 1.6.1/               # v1.6.1 release
 ```
 
 ## Quick Deployment Commands
@@ -31,8 +31,8 @@ cp -r svn/assets/* svn-repo/assets/
 cp -r svn/trunk/* svn-repo/trunk/
 
 # Create and copy tag
-mkdir -p svn-repo/tags/1.6.0
-cp -r svn/tags/1.6.0/* svn-repo/tags/1.6.0/
+mkdir -p svn-repo/tags/1.6.1
+cp -r svn/tags/1.6.1/* svn-repo/tags/1.6.1/
 ```
 
 ### 3. Add and Commit
@@ -40,5 +40,5 @@ cp -r svn/tags/1.6.0/* svn-repo/tags/1.6.0/
 cd svn-repo
 svn add --force * --auto-props --parents --depth infinity -q
 svn status
-svn ci -m "Release version 1.6.0 with XML Sitemap Scanner & 404 enhancements" --username your-wporg-username
+svn ci -m "Release version 1.6.1 with URL casing fix, drag selection boundary clamp, and screenshot docs update" --username your-wporg-username
 ```
