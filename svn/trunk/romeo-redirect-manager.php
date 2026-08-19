@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Romeo Redirect Manager
  * Description: A modern, lightweight redirect manager with XML sitemap scanning, full 301/302/307/308 support, 404 capture, and SEO analytics.
- * Version:     1.6.0
+ * Version:     1.6.1
  * Author:      Harsh Trivedi
  * Author URI:  https://harsh98trivedi.github.io/
  * Text Domain: romeo-redirect-manager
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'ROMEREMA_VERSION' ) ) {
-	define( 'ROMEREMA_VERSION', '1.6.0' );
+	define( 'ROMEREMA_VERSION', '1.6.1' );
 }
 
 // Autoloader - simplified manual require for plugin classes

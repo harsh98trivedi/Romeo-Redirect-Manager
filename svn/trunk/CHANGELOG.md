@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.6.1 - 2026-08-19
+### 🎯 Destination URL Case Preservation & Canvas Selection Bound Clamping
+
+This maintenance and reliability release resolves case-sensitivity handling for destination URLs and refines drag-to-select boundary handling.
+
+#### 🛠 Improvements & Bugfixes
+- **URL Case Preservation**: Fixed an issue where uppercase characters in destination URLs (such as case-sensitive GitHub repositories, YouTube video parameters, and external paths) were automatically lowercased upon creation or editing.
+- **Drag-to-Select Boundary Clamping**: Prevented the lasso selection box from expanding outside the horizontal canvas boundaries during multi-select operations and eliminated unwanted horizontal auto-scrolling.
+- **404 Destination Integrity**: Ensured fallback custom URLs configured in the 404 Error Auto-Handler preserve exact letter casing.
+- **Widget Quick Add Refinement**: Aligned the WordPress dashboard widget quick-add input to preserve casing while maintaining case-insensitive protocol checks.
+- **Documentation & Visual Assets**: Corrected and synchronized all visual tour screenshots and descriptive metadata across readme documentation.
+
 ## 1.6.0 - 2026-08-15
 ### 🗺️ XML Sitemap Scanner & Full Mobile Overhaul (WordPress 7.0.4 Ready)
 

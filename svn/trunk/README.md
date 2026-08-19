@@ -125,9 +125,9 @@ Don't let visitors hit a dead end. Configure exactly what happens when a 404 err
 | 4 | ![Import Modal](assets/images/screenshot-4.jpg) | **Import & Conflict Resolution** — Seamless JSON backup importer with automated conflict detection, merge, and overwrite options. |
 | 5 | ![Mobile Responsive](assets/images/screenshot-5.jpg) | **Mobile Responsiveness** — Fully responsive mobile and tablet interface with touch-friendly controls and fluid layout. |
 | 6 | ![Slug Warning](assets/images/screenshot-6.jpg) | **Smart Slug Conflict Warning** — Built-in conflict prevention alerting when a slug matches an existing WordPress page, with an Override option. |
-| 7 | ![404 Handler](assets/images/screenshot-7.jpg) | **404 Error Auto-Handler** — Dedicated 404 capture settings with an instant on/off toggle and fallback routing to homepage, custom URL, or internal page. |
-| 8 | ![Sitemap Results](assets/images/screenshot-8.jpg) | **XML Sitemap Scanner Results** — Real-time link audit cards displaying 200 OK clean URLs, status filter tabs, summary breakdown chips, and one-click fix buttons. |
-| 9 | ![Sitemap Speed](assets/images/screenshot-9.jpg) | **Sitemap Scanner & Adaptive Speed** — Automated sitemap detector with Smart Auto Adaptive scan speed controller for shared, VPS, and cloud hosts. |
+| 7 | ![Sitemap Results](assets/images/screenshot-7.jpg) | **XML Sitemap Scanner Results** — Real-time link audit cards displaying 200 OK clean URLs, status filter tabs, summary breakdown chips, and one-click fix buttons. |
+| 8 | ![Sitemap Speed](assets/images/screenshot-8.jpg) | **XML Sitemap Scanner & SEO Inspector Form** — Automated sitemap detector with Smart Auto Adaptive scan speed controller for shared, VPS, and cloud hosts. |
+| 9 | ![404 Handler](assets/images/screenshot-9.jpg) | **404 Error Auto-Handler** — Dedicated 404 capture settings with an instant on/off toggle and fallback routing to homepage, custom URL, or internal page. |
 | 10 | ![Dashboard Widget](assets/images/screenshot-10.jpg) | **WordPress Dashboard Widget** — High-density main WordPress dashboard widget with 3-step Quick Add, 404 status toggle, and live sitemap health indicators on WordPress 7.0.4. |
 
 ---

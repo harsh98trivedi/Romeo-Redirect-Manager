@@ -661,7 +661,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleFormSubmit(e) {
         if(e) e.preventDefault();
         
-        // Auto-add https:// support and lowercase
+        // Auto-add https:// support
         const targetUrlInput = dom.form.querySelector('[name="target_url"]');
         const slugInput = dom.form.querySelector('[name="slug"]');
         
@@ -670,7 +670,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (dom.targetType.value === 'url' && targetUrlInput && targetUrlInput.value.trim() !== '') {
-            let val = targetUrlInput.value.trim().toLowerCase();
+            let val = targetUrlInput.value.trim();
             if (!/^https?:\/\//i.test(val)) {
                 targetUrlInput.value = 'https://' + val;
             } else {
@@ -1055,7 +1055,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     urlInput?.focus();
                     return;
                 }
-                let val = urlInput.value.trim().toLowerCase();
+                let val = urlInput.value.trim();
                 if (!/^https?:\/\//i.test(val)) {
                     urlInput.value = 'https://' + val;
                 } else {
@@ -1563,7 +1563,6 @@ document.addEventListener('DOMContentLoaded', () => {
      function autoScroll() {
          if (!isDragging || !box) return;
 
-         const vw = window.innerWidth;
          const vh = window.innerHeight;
          let scrolled = false;
 
@@ -1572,14 +1571,6 @@ document.addEventListener('DOMContentLoaded', () => {
              scrolled = true;
          } else if (lastMouseY > vh - SCROLL_ZONE) {
              window.scrollBy(0, SCROLL_SPEED);
-             scrolled = true;
-         }
-
-         if (lastMouseX < SCROLL_ZONE) {
-             window.scrollBy(-SCROLL_SPEED, 0);
-             scrolled = true;
-         } else if (lastMouseX > vw - SCROLL_ZONE) {
-             window.scrollBy(SCROLL_SPEED, 0);
              scrolled = true;
          }
 
@@ -1593,14 +1584,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
      function updateDragBox(currentX, currentY) {
          if (!box) return;
-         // Use pageX/pageY equivalent: clientX + scrollX
+         const mainArea = document.querySelector('[data-view="card"]') || grid;
+         const containerRect = mainArea.getBoundingClientRect();
          const scrollX = window.scrollX || window.pageXOffset;
          const scrollY = window.scrollY || window.pageYOffset;
 
-         const absCurrentX = currentX + scrollX;
+         // Clamp horizontal coordinates strictly to the container bounds
+         const minX = containerRect.left + scrollX;
+         const maxX = containerRect.right + scrollX;
+
+         const absCurrentX = Math.max(minX, Math.min(currentX + scrollX, maxX));
          const absCurrentY = currentY + scrollY;
-         const absStartX = startX;
-         const absStartY = startY;
+         const absStartX   = Math.max(minX, Math.min(startX, maxX));
+         const absStartY   = startY;
 
          const width  = Math.abs(absCurrentX - absStartX);
          const height = Math.abs(absCurrentY - absStartY);
@@ -1638,7 +1634,11 @@ document.addEventListener('DOMContentLoaded', () => {
          isDragging = true;
          const scrollX = window.scrollX || window.pageXOffset;
          const scrollY = window.scrollY || window.pageYOffset;
-         startX = e.clientX + scrollX;
+         const containerRect = mainArea.getBoundingClientRect();
+         const minX = containerRect.left + scrollX;
+         const maxX = containerRect.right + scrollX;
+
+         startX = Math.max(minX, Math.min(e.clientX + scrollX, maxX));
          startY = e.clientY + scrollY;
          lastMouseX = e.clientX;
          lastMouseY = e.clientY;

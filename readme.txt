@@ -4,7 +4,7 @@ Tags: redirection, 301, 308, seo, sitemap-scanner, 404-redirect, redirect-chains
 Donate link: https://buymeacoffee.com/harshtrivedi
 Requires at least: 5.6
 Tested up to: 7.0.4
-Stable tag: 1.6.0
+Stable tag: 1.6.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -85,12 +85,17 @@ Yes. The "Target Type" selector allows you to choose "Internal Post" or "Interna
 4. **Import & Conflict Resolution** — Seamless JSON backup importer with automated conflict detection, merge, and overwrite options.
 5. **Mobile Responsiveness** — Fully responsive mobile and tablet interface with touch-friendly controls and fluid layout.
 6. **Smart Slug Conflict Warning** — Built-in conflict prevention alerting when a slug matches an existing WordPress page, with an Override option.
-7. **404 Error Auto-Handler** — Dedicated 404 capture settings with an instant on/off toggle and fallback routing to homepage, custom URL, or internal page.
-8. **XML Sitemap Scanner Results** — Real-time link audit cards displaying 200 OK clean URLs, status filter tabs, summary breakdown chips, and one-click fix buttons.
-9. **Sitemap Scanner & Adaptive Speed** — Automated sitemap detector with Smart Auto Adaptive scan speed controller for shared, VPS, and cloud hosts.
+7. **XML Sitemap Scanner Results** — Real-time link audit cards displaying 200 OK clean URLs, status filter tabs, summary breakdown chips, and one-click fix buttons.
+8. **XML Sitemap Scanner & SEO Inspector Form** — Automated sitemap detector with Smart Auto Adaptive scan speed controller for shared, VPS, and cloud hosts.
+9. **404 Error Auto-Handler** — Dedicated 404 capture settings with an instant on/off toggle and fallback routing to homepage, custom URL, or internal page.
 10. **WordPress Dashboard Widget** — High-density main WordPress dashboard widget with 3-step Quick Add, 404 status toggle, and live sitemap health indicators on WordPress 7.0.4.
 
 == Changelog ==
+
+= 1.6.1 - 2026-08-19 =
+* **Bugfix:** Preserved destination URL casing across all redirect inputs, 404 handlers, and quick-add widgets (prevented automatic lowercase conversion on case-sensitive paths and query parameters).
+* **Bugfix:** Fixed horizontal drag selection overflow by removing horizontal auto-scroll and clamping selection coordinates strictly within the card grid container.
+* **Documentation:** Updated and synchronized all visual screenshot descriptions across readme documentation.
 
 = 1.6.0 - 2026-08-15 =
 * **Compatibility:** Fully tested and certified compatible with WordPress 7.0.4 and PHP 8.x.

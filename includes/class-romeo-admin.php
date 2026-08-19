@@ -1692,11 +1692,10 @@ class Romerema_Admin {
                 if (type === 'url' && !url) { showMsg('Please enter a target URL.', false); return; }
                 if (type === 'post' && !pid) { showMsg('Please select a page.', false); return; }
 
-                // Auto-lowercase
+                // Auto-lowercase slug
                 slug = slug.toLowerCase();
                 if (type === 'url') {
-                    url = url.toLowerCase();
-                    if (!/^https?:\/\//.test(url)) url = 'https://' + url;
+                    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
                 }
 
                 btn.disabled = true;
