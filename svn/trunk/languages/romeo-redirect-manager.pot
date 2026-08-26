@@ -2,7 +2,7 @@
 # This file is distributed under the GPL-2.0+.
 msgid ""
 msgstr ""
-"Project-Id-Version: Romeo Redirect Manager 1.6.1\n"
+"Project-Id-Version: Romeo Redirect Manager 1.6.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/romeo-redirect-manager\n"
 "POT-Creation-Date: 2026-08-27 00:00+0000\n"
 "MIME-Version: 1.0\n"
