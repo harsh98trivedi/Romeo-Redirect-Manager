@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<ruleset name="Romeo Redirect Manager WordPress Coding Standards">
+	<description>PHP_CodeSniffer ruleset for Romeo Redirect Manager plugin.</description>
+
+	<!-- Pass flags to PHPCS -->
+	<arg value="psv"/>
+	<arg name="colors"/>
+	<arg name="extensions" value="php"/>
+	<arg name="parallel" value="8"/>
+
+	<!-- Scan all files in directory -->
+	<file>.</file>
+
+	<!-- Exclude paths -->
+	<exclude-pattern>*/.git/*</exclude-pattern>
+	<exclude-pattern>*/.github/*</exclude-pattern>
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/svn/*</exclude-pattern>
+	<exclude-pattern>*/assets/images/*</exclude-pattern>
+
+	<!-- Include standard WordPress rulesets -->
+	<rule ref="WordPress-Core"/>
+	<rule ref="WordPress-Docs"/>
+	<rule ref="WordPress-Extra"/>
+
+	<!-- Text Domain Verification -->
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="romeo-redirect-manager"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!-- Minimum supported WP version -->
+	<config name="minimum_supported_wp_version" value="5.6"/>
+
+	<!-- PHP Compatibility -->
+	<config name="testVersion" value="7.4-"/>
+</ruleset>

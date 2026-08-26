@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.6.2 - 2026-08-27
+### 🏛️ WordPress Standard Compliance & Plugin Architecture
+
+This update introduces full compliance with the WordPress Plugin Handbook, WordPress Coding Standards (WPCS), and official WordPress.org directory standards.
+
+#### ✨ Core Architectural Improvements
+- **Clean Uninstallation Lifecycle**: Added `uninstall.php` for complete database option and transient cleanup upon plugin deletion, with full support for both single-site and WordPress Multisite network installations.
+- **Main Plugin File Standards**: Added complete standard plugin header metadata (`Plugin URI`, `Requires at least`, `Requires PHP`, `Domain Path`, `License URI`), standardized plugin path and URL constants, activation/deactivation hooks, and action/row meta links (`Settings`, `Sitemap Scanner`, `Documentation`, `Support`, `Donate`).
+- **Internationalization (i18n)**: Added `languages/` directory with gettext POT template `languages/romeo-redirect-manager.pot` and automatic textdomain loading via `load_plugin_textdomain`.
+- **Directory Access Security**: Added `index.php` security files (`// Silence is golden.`) across all directories.
+- **Developer Tooling & Code Quality**: Added `composer.json`, `phpcs.xml.dist` (WordPress Coding Standards ruleset), `.editorconfig`, `.gitattributes`, and updated `.distignore` for clean package distribution.
+
 ## 1.6.1 - 2026-08-19
 ### 🎯 Destination URL Case Preservation & Canvas Selection Bound Clamping
 
@@ -72,7 +84,7 @@ This release focuses on data integrity with automatic protocol detection and sig
 - **Version Bump**: Full system update to v1.5.0.
 
 ## 1.4.0 - 2026-03-09
-### � Dashboard Widget & Advanced Sorting
+###  Dashboard Widget & Advanced Sorting
 
 This release introduces comprehensive sorting capabilities right from the dashboard, mobile list-view visual improvements, and a brand new beautiful WordPress Dashboard Widget.
 

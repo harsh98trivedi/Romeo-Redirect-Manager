@@ -4,7 +4,7 @@ Tags: redirection, 301, 308, seo, sitemap-scanner, 404-redirect, redirect-chains
 Donate link: https://buymeacoffee.com/harshtrivedi
 Requires at least: 5.6
 Tested up to: 7.0.4
-Stable tag: 1.6.1
+Stable tag: 1.6.2
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -91,6 +91,13 @@ Yes. The "Target Type" selector allows you to choose "Internal Post" or "Interna
 10. **WordPress Dashboard Widget** — High-density main WordPress dashboard widget with 3-step Quick Add, 404 status toggle, and live sitemap health indicators on WordPress 7.0.4.
 
 == Changelog ==
+
+= 1.6.2 - 2026-08-27 =
+* **Compliance:** Added `uninstall.php` for complete database option and transient cleanup upon plugin deletion, supporting both single-site and Multisite networks.
+* **Compliance:** Standardized main plugin file headers, constants, lifecycle activation/deactivation hooks, and action/row meta links (`Settings`, `Sitemap Scanner`, `Documentation`, `Support`, `Donate`).
+* **Compliance:** Added `languages/` directory and generated gettext POT template `languages/romeo-redirect-manager.pot` for internationalization.
+* **Security:** Added directory security silence files (`index.php`) across root, images, and language folders.
+* **Quality:** Added `composer.json`, `phpcs.xml.dist` (WordPress Coding Standards), `.editorconfig`, `.gitattributes`, and updated `.distignore`.
 
 = 1.6.1 - 2026-08-19 =
 * **Bugfix:** Preserved destination URL casing across all redirect inputs, 404 handlers, and quick-add widgets (prevented automatic lowercase conversion on case-sensitive paths and query parameters).

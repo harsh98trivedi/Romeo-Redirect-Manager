@@ -1,0 +1,45 @@
+{
+  "name": "harsh98trivedi/romeo-redirect-manager",
+  "description": "A modern, lightweight redirect manager with XML sitemap scanning, full 301/302/307/308 support, 404 capture, and SEO analytics for WordPress.",
+  "type": "wordpress-plugin",
+  "keywords": [
+    "wordpress",
+    "plugin",
+    "redirect",
+    "301-redirect",
+    "308-redirect",
+    "404-manager",
+    "sitemap-scanner",
+    "seo"
+  ],
+  "homepage": "https://wordpress.org/plugins/romeo-redirect-manager/",
+  "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "Harsh Trivedi",
+      "homepage": "https://harsh98trivedi.github.io/",
+      "role": "Developer"
+    }
+  ],
+  "support": {
+    "issues": "https://wordpress.org/support/plugin/romeo-redirect-manager/",
+    "source": "https://github.com/harsh98trivedi/Romeo-Redirect-Manager"
+  },
+  "require": {
+    "php": ">=7.4"
+  },
+  "require-dev": {
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+    "wp-coding-standards/wpcs": "^3.0",
+    "phpcompatibility/phpcompatibility-wp": "^2.1"
+  },
+  "scripts": {
+    "lint": "phpcs -p -s -v --standard=phpcs.xml.dist .",
+    "format": "phpcbf -p -s -v --standard=phpcs.xml.dist ."
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
+  }
+}
