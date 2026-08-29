@@ -1,6 +1,6 @@
 === Romeo Redirect Manager ===
 Contributors: harsh98trivedi
-Tags: redirection, 301, 308, seo, sitemap-scanner, 404-redirect, redirect-chains
+Tags: redirection, 301, 308, seo, sitemap-scanner
 Donate link: https://buymeacoffee.com/harshtrivedi
 Requires at least: 5.6
 Tested up to: 7.1
@@ -9,7 +9,7 @@ Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Modern redirect manager with XML sitemap scanning, 404 capture, and a beautiful card UI. Supports 301, 302, 307, 308, hit counting, and internal linking. Tested and fully compatible with WordPress 7.1.
+Modern redirect manager with XML sitemap scanning, 404 capture, 301/308 redirects, and a sleek card UI. Tested with WordPress 7.1.
 
 == Description ==
 
