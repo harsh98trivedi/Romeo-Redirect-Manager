@@ -2,11 +2,11 @@
 
 ![Romeo Redirect Manager Banner](assets/images/meta.jpg)
 
-[![WordPress](https://img.shields.io/badge/WordPress-5.6--7.0.4-blue.svg)](https://wordpress.org/)
+[![WordPress](https://img.shields.io/badge/WordPress-5.6--7.1-blue.svg)](https://wordpress.org/)
 [![PHP](https://img.shields.io/badge/PHP-7.4+-purple.svg)](https://php.net/)
 [![License](https://img.shields.io/badge/License-GPL--2.0+-green.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
-[![Version](https://img.shields.io/badge/Version-1.6.2-orange.svg)](https://github.com/harsh98trivedi/Romeo-Redirect-Manager)
-[![WordPress 7.0.4 Ready](https://img.shields.io/badge/WP%207.0.4-Tested%20%26%20Ready-success.svg)](https://wordpress.org/)
+[![Version](https://img.shields.io/badge/Version-1.6.3-orange.svg)](https://github.com/harsh98trivedi/Romeo-Redirect-Manager)
+[![WordPress 7.1 Ready](https://img.shields.io/badge/WP%207.1-Tested%20%26%20Ready-success.svg)](https://wordpress.org/)
 [![Rate this plugin](https://img.shields.io/badge/Rate_this_plugin-★★★★★-yellow.svg)](https://wordpress.org/support/plugin/romeo-redirect-manager/reviews/#new-post)
 
 **Romeo Redirect Manager** is a modern, lightweight WordPress plugin designed to make redirect management and SEO sitemap auditing effortless and beautiful. Say goodbye to clunky tables and outdated interfaces — welcome to a sleek, card-based dashboard that supports the latest SEO standards, including **XML Sitemap Auditing** and **308 Permanent Redirects**.
@@ -68,9 +68,9 @@ Don't let visitors hit a dead end. Configure exactly what happens when a 404 err
 
 ### 📥 Download
 
-[![Download](https://img.shields.io/badge/Download-v1.6.2-brightgreen.svg)](https://github.com/harsh98trivedi/Romeo-Redirect-Manager/releases/download/1.6.2/romeo-redirect-manager.zip)
+[![Download](https://img.shields.io/badge/Download-v1.6.3-brightgreen.svg)](https://github.com/harsh98trivedi/Romeo-Redirect-Manager/releases/download/1.6.3/romeo-redirect-manager.zip)
 
-👉 [**Click here to Download v1.6.2**](https://github.com/harsh98trivedi/Romeo-Redirect-Manager/releases/download/1.6.2/romeo-redirect-manager.zip)
+👉 [**Click here to Download v1.6.3**](https://github.com/harsh98trivedi/Romeo-Redirect-Manager/releases/download/1.6.3/romeo-redirect-manager.zip)
 
 ### From WordPress Admin
 1. Download the latest release `.zip` file from the link above
@@ -128,15 +128,15 @@ Don't let visitors hit a dead end. Configure exactly what happens when a 404 err
 | 7 | ![Sitemap Results](assets/images/screenshot-7.jpg) | **XML Sitemap Scanner Results** — Real-time link audit cards displaying 200 OK clean URLs, status filter tabs, summary breakdown chips, and one-click fix buttons. |
 | 8 | ![Sitemap Speed](assets/images/screenshot-8.jpg) | **XML Sitemap Scanner & SEO Inspector Form** — Automated sitemap detector with Smart Auto Adaptive scan speed controller for shared, VPS, and cloud hosts. |
 | 9 | ![404 Handler](assets/images/screenshot-9.jpg) | **404 Error Auto-Handler** — Dedicated 404 capture settings with an instant on/off toggle and fallback routing to homepage, custom URL, or internal page. |
-| 10 | ![Dashboard Widget](assets/images/screenshot-10.jpg) | **WordPress Dashboard Widget** — High-density main WordPress dashboard widget with 3-step Quick Add, 404 status toggle, and live sitemap health indicators on WordPress 7.0.4. |
+| 10 | ![Dashboard Widget](assets/images/screenshot-10.jpg) | **WordPress Dashboard Widget** — High-density main WordPress dashboard widget with 3-step Quick Add, 404 status toggle, and live sitemap health indicators on WordPress 7.1. |
 
 ---
 
 ## 📋 Requirements
 
-- **WordPress**: 5.6 to 7.0.4 (Fully Tested & Supported)
+- **WordPress**: 5.6 to 7.1 (Fully Tested & Supported)
 - **PHP**: 7.4 to 8.x
-- **Tested up to**: WordPress 7.0.4
+- **Tested up to**: WordPress 7.1
 
 ---
 

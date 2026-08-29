@@ -12,7 +12,7 @@ svn/
 │   └── screenshot-*.jpg
 ├── trunk/                   # Main development branch (all current plugin files)
 └── tags/                    # Versioned releases
-    └── 1.6.2/               # v1.6.2 release
+    └── 1.6.3/               # v1.6.3 release
 ```
 
 ## Quick Deployment Commands
@@ -31,8 +31,8 @@ cp -r svn/assets/* svn-repo/assets/
 cp -r svn/trunk/* svn-repo/trunk/
 
 # Create and copy tag
-mkdir -p svn-repo/tags/1.6.2
-cp -r svn/tags/1.6.2/* svn-repo/tags/1.6.2/
+mkdir -p svn-repo/tags/1.6.3
+cp -r svn/tags/1.6.3/* svn-repo/tags/1.6.3/
 ```
 
 ### 3. Add and Commit
@@ -40,5 +40,5 @@ cp -r svn/tags/1.6.2/* svn-repo/tags/1.6.2/
 cd svn-repo
 svn add --force * --auto-props --parents --depth infinity -q
 svn status
-svn ci -m "Release version 1.6.2 - WordPress standard compliance, uninstall lifecycle, i18n, and developer tooling" --username your-wporg-username
+svn ci -m "Release version 1.6.3 - WordPress 7.1 compatibility and engine optimization" --username your-wporg-username
 ```

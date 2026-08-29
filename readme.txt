@@ -3,13 +3,13 @@ Contributors: harsh98trivedi
 Tags: redirection, 301, 308, seo, sitemap-scanner, 404-redirect, redirect-chains
 Donate link: https://buymeacoffee.com/harshtrivedi
 Requires at least: 5.6
-Tested up to: 7.0.4
-Stable tag: 1.6.2
+Tested up to: 7.1
+Stable tag: 1.6.3
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Modern redirect manager with XML sitemap scanning, 404 capture, and a beautiful card UI. Supports 301, 302, 307, 308, hit counting, and internal linking. Tested and fully compatible with WordPress 7.0.4.
+Modern redirect manager with XML sitemap scanning, 404 capture, and a beautiful card UI. Supports 301, 302, 307, 308, hit counting, and internal linking. Tested and fully compatible with WordPress 7.1.
 
 == Description ==
 
@@ -17,7 +17,7 @@ Modern redirect manager with XML sitemap scanning, 404 capture, and a beautiful 
 
 **Redirects** is a sleek, lightweight, and powerful solution for managing URL redirections, auditing XML sitemaps, and fixing 404 errors on your WordPress site. 
 Optimize your **SEO performance** and improve user experience by preventing broken links and capturing lost traffic.
-Built for **SEO experts, bloggers, and agencies**, it replaces clunky old tables with a beautiful **"App-Grade" card dashboard** that makes link management fast and enjoyable. Fully tested and ready for **WordPress 7.0.4**.
+Built for **SEO experts, bloggers, and agencies**, it replaces clunky old tables with a beautiful **"App-Grade" card dashboard** that makes link management fast and enjoyable. Fully tested and ready for **WordPress 7.1**.
 
 ### Stop Losing Traffic with Smart Redirects & Sitemap Audits
 Whether you are migrating your site, changing permalink structures, or fixing crawl errors from **Google Search Console**, Redirects provides the most stable and visual way to handle your traffic. 
@@ -88,9 +88,16 @@ Yes. The "Target Type" selector allows you to choose "Internal Post" or "Interna
 7. **XML Sitemap Scanner Results** — Real-time link audit cards displaying 200 OK clean URLs, status filter tabs, summary breakdown chips, and one-click fix buttons.
 8. **XML Sitemap Scanner & SEO Inspector Form** — Automated sitemap detector with Smart Auto Adaptive scan speed controller for shared, VPS, and cloud hosts.
 9. **404 Error Auto-Handler** — Dedicated 404 capture settings with an instant on/off toggle and fallback routing to homepage, custom URL, or internal page.
-10. **WordPress Dashboard Widget** — High-density main WordPress dashboard widget with 3-step Quick Add, 404 status toggle, and live sitemap health indicators on WordPress 7.0.4.
+10. **WordPress Dashboard Widget** — High-density main WordPress dashboard widget with 3-step Quick Add, 404 status toggle, and live sitemap health indicators on WordPress 7.1.
 
 == Changelog ==
+
+= 1.6.3 - 2026-08-29 =
+* **Compatibility:** Tested, validated, and certified fully compatible with WordPress 7.1 and PHP 8.x.
+* **Performance:** Replaced static asset version parameters with dynamic `ROMEREMA_VERSION` binding to enforce immediate client and CDN cache invalidation upon upgrade.
+* **Refinement:** Synchronized fallback User-Agent telemetry version in XML Sitemap Scanner.
+* **Internationalization:** Refreshed gettext translation template headers and metadata for v1.6.3.
+* **Documentation:** Updated release download links, badge shields, and version references across all documentation.
 
 = 1.6.2 - 2026-08-27 =
 * **Compliance:** Added `uninstall.php` for complete database option and transient cleanup upon plugin deletion, supporting both single-site and Multisite networks.
@@ -174,6 +181,9 @@ Yes. The "Target Type" selector allows you to choose "Internal Post" or "Interna
 * Bulk delete redirects.
 
 == Upgrade Notice ==
+
+= 1.6.3 =
+WordPress 7.1 compatibility update with optimized asset caching and updated translations.
 
 = 1.3.1 =
 Major Premium UX/UI overhaul including custom dropdowns and unified professional fields.

@@ -70,14 +70,14 @@ class Romerema_Admin {
         $main_file = dirname( __FILE__ ) . '/../romeo-redirect-manager.php';
 
         // Load CSS on ALL admin pages so the sidebar icon is styled everywhere.
-        wp_enqueue_style( 'romeo-admin-css', plugins_url( 'assets/css/admin.css', $main_file ), array(), '1.6.0' );
+        wp_enqueue_style( 'romeo-admin-css', plugins_url( 'assets/css/admin.css', $main_file ), array(), defined( 'ROMEREMA_VERSION' ) ? ROMEREMA_VERSION : '1.6.3' );
 
         // Load JS only on plugin pages (heavy, not needed elsewhere).
         if ( strpos( $hook, 'romeo-redirect-manager' ) === false ) {
             return;
         }
 
-        wp_enqueue_script( 'romeo-admin-js', plugins_url( 'assets/js/admin.js', $main_file ), array(), '1.6.0', true );
+        wp_enqueue_script( 'romeo-admin-js', plugins_url( 'assets/js/admin.js', $main_file ), array(), defined( 'ROMEREMA_VERSION' ) ? ROMEREMA_VERSION : '1.6.3', true );
 
         $default_sitemap = class_exists( 'Romerema_Sitemap_Scanner' ) ? Romerema_Sitemap_Scanner::get_default_sitemap_url() : home_url( '/wp-sitemap.xml' );
 

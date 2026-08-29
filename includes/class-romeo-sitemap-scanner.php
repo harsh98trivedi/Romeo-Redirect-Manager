@@ -131,7 +131,7 @@ class Romerema_Sitemap_Scanner {
         $response = wp_safe_remote_get( $url, array(
             'timeout'     => 15,
             'sslverify'   => false,
-            'user-agent'  => 'RomeoRedirectManager/' . ( defined( 'ROMEREMA_VERSION' ) ? ROMEREMA_VERSION : '1.6.0' ) . '; ' . home_url(),
+            'user-agent'  => 'RomeoRedirectManager/' . ( defined( 'ROMEREMA_VERSION' ) ? ROMEREMA_VERSION : '1.6.3' ) . '; ' . home_url(),
             'headers'     => array(
                 'Accept' => 'application/xml, text/xml, */*',
             ),
@@ -261,7 +261,7 @@ class Romerema_Sitemap_Scanner {
                 'timeout'     => 10,
                 'redirection' => 0,
                 'sslverify'   => false,
-                'user-agent'  => 'RomeoRedirectManager/' . ( defined( 'ROMEREMA_VERSION' ) ? ROMEREMA_VERSION : '1.6.0' ) . '; ' . home_url(),
+                'user-agent'  => 'RomeoRedirectManager/' . ( defined( 'ROMEREMA_VERSION' ) ? ROMEREMA_VERSION : '1.6.3' ) . '; ' . home_url(),
                 'headers'     => array(
                     'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                 ),
@@ -273,7 +273,7 @@ class Romerema_Sitemap_Scanner {
                     'timeout'     => 10,
                     'redirection' => 0,
                     'sslverify'   => false,
-                    'user-agent'  => 'RomeoRedirectManager/' . ( defined( 'ROMEREMA_VERSION' ) ? ROMEREMA_VERSION : '1.6.0' ) . '; ' . home_url(),
+                    'user-agent'  => 'RomeoRedirectManager/' . ( defined( 'ROMEREMA_VERSION' ) ? ROMEREMA_VERSION : '1.6.3' ) . '; ' . home_url(),
                     'headers'     => array(
                         'Range'  => 'bytes=0-1024',
                         'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',

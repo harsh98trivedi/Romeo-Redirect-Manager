@@ -3,7 +3,7 @@
  * Plugin Name:       Romeo Redirect Manager
  * Plugin URI:        https://wordpress.org/plugins/romeo-redirect-manager/
  * Description:       A modern, lightweight redirect manager with XML sitemap scanning, full 301/302/307/308 support, 404 capture, and SEO analytics.
- * Version:           1.6.2
+ * Version:           1.6.3
  * Requires at least: 5.6
  * Requires PHP:      7.4
  * Author:            Harsh Trivedi
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Define Plugin Constants.
 if ( ! defined( 'ROMEREMA_VERSION' ) ) {
-	define( 'ROMEREMA_VERSION', '1.6.2' );
+	define( 'ROMEREMA_VERSION', '1.6.3' );
 }
 if ( ! defined( 'ROMEREMA_FILE' ) ) {
 	define( 'ROMEREMA_FILE', __FILE__ );

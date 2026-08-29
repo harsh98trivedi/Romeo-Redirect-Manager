@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.6.3 - 2026-08-29
+### 🚀 WordPress 7.1 Compatibility & Engine Optimization
+
+This maintenance release validates and certifies complete compatibility with WordPress 7.1, optimizes dynamic asset cache busting, and updates developer translation templates.
+
+#### ✨ Compatibility & Engine Improvements
+- **WordPress 7.1 Compatibility**: Tested, validated, and verified compatibility with the latest WordPress 7.1 release and PHP 8.x.
+- **Asset Cache Invalidation**: Replaced static script and stylesheet version numbers with dynamic `ROMEREMA_VERSION` constant binding to ensure browser and CDN caches immediately update after plugin upgrades.
+- **User-Agent Header Alignment**: Synchronized fallback User-Agent telemetry in the XML Sitemap Scanner to the latest release version.
+- **i18n Template Sync**: Updated gettext POT translation template metadata and headers for v1.6.3.
+- **Documentation & Release Artifacts**: Updated download URLs, release badges, SVN trunk/tags, and installation instructions for v1.6.3.
+
 ## 1.6.2 - 2026-08-27
 ### 🏛️ WordPress Standard Compliance & Plugin Architecture
 
@@ -84,7 +96,7 @@ This release focuses on data integrity with automatic protocol detection and sig
 - **Version Bump**: Full system update to v1.5.0.
 
 ## 1.4.0 - 2026-03-09
-###  Dashboard Widget & Advanced Sorting
+### � Dashboard Widget & Advanced Sorting
 
 This release introduces comprehensive sorting capabilities right from the dashboard, mobile list-view visual improvements, and a brand new beautiful WordPress Dashboard Widget.
 
